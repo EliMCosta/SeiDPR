@@ -1,0 +1,17 @@
+==============================================================================
+RecDistProc :: Robô para receber e distribuir processos SEI                   
+==============================================================================
+Criar diretórios                                                      | PASS |
+------------------------------------------------------------------------------
+Autenticar no SEI                                                     | PASS |
+------------------------------------------------------------------------------
+Monitorar SEI                                                         | PASS |
+------------------------------------------------------------------------------
+Visualizar processos e extrair informações adicionais                 | PASS |
+------------------------------------------------------------------------------
+RecDistProc :: Robô para receber e distribuir processos SEI           | PASS |
+4 tasks, 4 passed, 0 failed
+==============================================================================
+Output:  /home/eli/PycharmProjects/SeiRecpData/output.xml
+Log:     /home/eli/PycharmProjects/SeiRecpData/log.html
+Report:  /home/eli/PycharmProjects/SeiRecpData/report.html

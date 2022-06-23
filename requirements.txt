@@ -1,0 +1,5 @@
+robotframework
+rpaframework
+keyring
+pandas
+beautifulsoup4

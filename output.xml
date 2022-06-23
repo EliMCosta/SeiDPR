@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 4.1.3 (Python 3.10.4 on linux)" generated="20220623 14:04:36.262" rpa="true" schemaversion="2">
+<suite id="s1" name="RecDistProc" source="/home/eli/PycharmProjects/SeiRecpData/RecDistProc.robot">
+<test id="s1-t1" name="Criar diretórios">
+<kw name="Create Directory" library="OperatingSystem">
+<arg>/tmp/automations</arg>
+<doc>Creates the specified directory.</doc>
+<msg timestamp="20220623 14:04:36.635" level="INFO" html="true">Created directory '&lt;a href="file:///tmp/automations"&gt;/tmp/automations&lt;/a&gt;'.</msg>
+<status status="PASS" starttime="20220623 14:04:36.634" endtime="20220623 14:04:36.635"/>
+</kw>
+<status status="PASS" starttime="20220623 14:04:36.634" endtime="20220623 14:04:36.635"/>
+</test>
+<test id="s1-t2" name="Autenticar no SEI">
+<kw name="Wait Until Keyword Succeeds" library="BuiltIn">
+<arg>3x</arg>
+<arg>5s</arg>
+<arg>Entrar no SEI</arg>
+<doc>Runs the specified keyword and retries if it fails.</doc>
+<kw name="Entrar no SEI">
+<kw name="Senha Sei" library="PassRetrieve">
+<var>${senha_sei}</var>
+<msg timestamp="20220623 14:04:36.737" level="INFO">${senha_sei} = $4190Cme</msg>
+<status status="PASS" starttime="20220623 14:04:36.636" endtime="20220623 14:04:36.737"/>
+</kw>
+<kw name="Open Browser" library="RPA.Browser.Selenium">
+<arg>${URL_SEI}</arg>
+<arg>browser=${Browser}</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<msg timestamp="20220623 14:04:36.738" level="INFO">Opening browser 'chrome' to base url 'https://sei.df.gov.br'.</msg>
+<status status="PASS" starttime="20220623 14:04:36.738" endtime="20220623 14:04:39.272"/>
+</kw>
+<kw name="Wait Until Page Contains" library="RPA.Browser.Selenium">
+<arg>GOVERNO DO DISTRITO FEDERAL</arg>
+<arg>timeout=5</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="PASS" starttime="20220623 14:04:39.272" endtime="20220623 14:04:39.285"/>
+</kw>
+<kw name="Input Text" library="RPA.Browser.Selenium">
+<arg>txtUsuario</arg>
+<arg>${login_sei}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<msg timestamp="20220623 14:04:39.286" level="INFO">Typing text '92100027740' into text field 'txtUsuario'.</msg>
+<status status="PASS" starttime="20220623 14:04:39.285" endtime="20220623 14:04:39.368"/>
+</kw>
+<kw name="Input Text" library="RPA.Browser.Selenium">
+<arg>pwdSenha</arg>
+<arg>${senha_sei}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<msg timestamp="20220623 14:04:39.368" level="INFO">Typing text '$4190Cme' into text field 'pwdSenha'.</msg>
+<status status="PASS" starttime="20220623 14:04:39.368" endtime="20220623 14:04:39.423"/>
+</kw>
+<kw name="Select From List By Value" library="RPA.Browser.Selenium">
+<arg>selOrgao</arg>
+<arg>${value_Orgao}</arg>
+<doc>Selects options from selection list ``locator`` by ``values``.</doc>
+<msg timestamp="20220623 14:04:39.423" level="INFO">Selecting options from selection list 'selOrgao' by value 21.</msg>
+<status status="PASS" starttime="20220623 14:04:39.423" endtime="20220623 14:04:39.467"/>
+</kw>
+<kw name="Click Button When Visible" library="RPA.Browser.Selenium">
+<arg>sbmLogin</arg>
+<doc>Click button identified by ``locator``, once it becomes visible.</doc>
+<msg timestamp="20220623 14:04:39.484" level="INFO">Clicking button 'sbmLogin'.</msg>
+<status status="PASS" starttime="20220623 14:04:39.467" endtime="20220623 14:04:42.761"/>
+</kw>
+<status status="PASS" starttime="20220623 14:04:36.635" endtime="20220623 14:04:42.761"/>
+</kw>
+<status status="PASS" starttime="20220623 14:04:36.635" endtime="20220623 14:04:42.761"/>
+</kw>
+<kw name="Wait Until Page Contains" library="RPA.Browser.Selenium">
+<arg>Controle de Processos</arg>
+<arg>timeout=5</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="PASS" starttime="20220623 14:04:42.762" endtime="20220623 14:04:42.774"/>
+</kw>
+<kw name="Get Window Handles" library="RPA.Browser.Selenium">
+<var>${windowhandles}</var>
+<doc>Returns all child window handles of the selected browser as a list.</doc>
+<msg timestamp="20220623 14:04:42.777" level="INFO">${windowhandles} = ['CDwindow-8EFC0666CAEFB448B98595E493E7EF43', 'CDwindow-FA3786B6AB241259B1694DB112D4299E']</msg>
+<status status="PASS" starttime="20220623 14:04:42.774" endtime="20220623 14:04:42.777"/>
+</kw>
+<kw name="Switch Window" library="RPA.Browser.Selenium">
+<arg>${windowhandles}[1]</arg>
+<doc>Switches to browser window matching ``locator``.</doc>
+<status status="PASS" starttime="20220623 14:04:42.778" endtime="20220623 14:04:42.804"/>
+</kw>
+<kw name="Close Window" library="RPA.Browser.Selenium">
+<doc>Closes currently opened and selected browser window/tab.</doc>
+<status status="PASS" starttime="20220623 14:04:42.804" endtime="20220623 14:04:42.823"/>
+</kw>
+<kw name="Switch Window" library="RPA.Browser.Selenium">
+<arg>${windowhandles}[0]</arg>
+<doc>Switches to browser window matching ``locator``.</doc>
+<status status="PASS" starttime="20220623 14:04:42.823" endtime="20220623 14:04:42.834"/>
+</kw>
+<status status="PASS" starttime="20220623 14:04:36.635" endtime="20220623 14:04:42.835"/>
+</test>
+<test id="s1-t3" name="Monitorar SEI">
+<kw name="Log" library="BuiltIn">
+<arg>Verificando se há processos novos recebidos...</arg>
+<arg>console=True</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20220623 14:04:42.836" level="INFO">Verificando se há processos novos recebidos...</msg>
+<status status="PASS" starttime="20220623 14:04:42.836" endtime="20220623 14:04:42.836"/>
+</kw>
+<kw name="Gerar não visualizados SEI">
+<kw name="Click Element" library="RPA.Browser.Selenium">
+<arg>//*[@id="main-menu"]/li[1]/a</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<msg timestamp="20220623 14:04:42.837" level="INFO">Clicking element '//*[@id="main-menu"]/li[1]/a'.</msg>
+<status status="PASS" starttime="20220623 14:04:42.837" endtime="20220623 14:04:43.846"/>
+</kw>
+<kw name="Get Source" library="RPA.Browser.Selenium">
+<var>${Source}</var>
+<doc>Returns the entire HTML source of the current page or frame.</doc>
+<msg timestamp="20220623 14:04:43.859" level="INFO">${Source} = &lt;html lang="pt-br"&gt;&lt;head&gt;
+&lt;link rel="shortcut icon" href="favicon.ico" type="image/x-icon"&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"&gt;
+&lt;meta name="robots" content="noinde...</msg>
+<status status="PASS" starttime="20220623 14:04:43.846" endtime="20220623 14:04:43.859"/>
+</kw>
+<kw name="Create File" library="RPA.FileSystem">
+<arg>/tmp/automations/NaoVis.txt</arg>
+<arg>${Source}</arg>
+<arg>overwrite=True</arg>
+<doc>Creates a new text file, and writes content if any is given.</doc>
+<status status="PASS" starttime="20220623 14:04:43.860" endtime="20220623 14:04:43.861"/>
+</kw>
+<kw name="Run Process" library="Process">
+<arg>python3</arg>
+<arg>/home/eli/Robots/robotenv/NaoVis.py</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20220623 14:04:43.861" level="INFO">Starting process:
+python3 /home/eli/Robots/robotenv/NaoVis.py</msg>
+<msg timestamp="20220623 14:04:43.867" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20220623 14:04:43.888" level="INFO">Process completed.</msg>
+<status status="PASS" starttime="20220623 14:04:43.861" endtime="20220623 14:04:43.888"/>
+</kw>
+<status status="PASS" starttime="20220623 14:04:42.836" endtime="20220623 14:04:43.888"/>
+</kw>
+<kw name="List Files In Directory" library="OperatingSystem">
+<var>${ListNaoVis}</var>
+<arg>${Dir_NaoVisualizados}</arg>
+<doc>Wrapper for `List Directory` that returns only files.</doc>
+<msg timestamp="20220623 14:04:43.889" level="INFO" html="true">Listing contents of directory '&lt;a href="file:///home/eli/Documents/Robots/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados"&gt;/home/eli/Documents/Robots/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados&lt;/a&gt;'.</msg>
+<msg timestamp="20220623 14:04:43.889" level="INFO">0 files:
+</msg>
+<msg timestamp="20220623 14:04:43.889" level="INFO">${ListNaoVis} = []</msg>
+<status status="PASS" starttime="20220623 14:04:43.888" endtime="20220623 14:04:43.889"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${isEmpty}</var>
+<arg>Should Be Empty</arg>
+<arg>${ListNaoVis}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Be Empty" library="BuiltIn">
+<arg>${ListNaoVis}</arg>
+<doc>Verifies that the given item is empty.</doc>
+<msg timestamp="20220623 14:04:43.891" level="INFO">Length is 0</msg>
+<status status="PASS" starttime="20220623 14:04:43.891" endtime="20220623 14:04:43.891"/>
+</kw>
+<msg timestamp="20220623 14:04:43.891" level="INFO">${isEmpty} = True</msg>
+<status status="PASS" starttime="20220623 14:04:43.890" endtime="20220623 14:04:43.891"/>
+</kw>
+<if>
+<branch type="IF" condition="${isEmpty} == True">
+<kw name="Log" library="BuiltIn">
+<arg>Nenhum novo processo recebido.</arg>
+<arg>console=True</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20220623 14:04:43.892" level="INFO">Nenhum novo processo recebido.</msg>
+<status status="PASS" starttime="20220623 14:04:43.892" endtime="20220623 14:04:43.892"/>
+</kw>
+<status status="PASS" starttime="20220623 14:04:43.892" endtime="20220623 14:04:43.892"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" library="BuiltIn">
+<arg>Novo(s) processo(s) recebido(s):</arg>
+<arg>console=True</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20220623 14:04:43.892" endtime="20220623 14:04:43.892"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>${ListNaoVis}</arg>
+<arg>console=True</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20220623 14:04:43.892" endtime="20220623 14:04:43.892"/>
+</kw>
+<status status="NOT RUN" starttime="20220623 14:04:43.892" endtime="20220623 14:04:43.892"/>
+</branch>
+<status status="PASS" starttime="20220623 14:04:43.891" endtime="20220623 14:04:43.892"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>...fim da verificação</arg>
+<arg>console=True</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20220623 14:04:43.892" level="INFO">...fim da verificação</msg>
+<status status="PASS" starttime="20220623 14:04:43.892" endtime="20220623 14:04:43.892"/>
+</kw>
+<status status="PASS" starttime="20220623 14:04:42.835" endtime="20220623 14:04:43.893"/>
+</test>
+<test id="s1-t4" name="Visualizar processos e extrair informações adicionais">
+<kw name="List Files In Directory" library="OperatingSystem">
+<var>${ListNaoVis}</var>
+<arg>${Dir_NaoVisualizados}</arg>
+<doc>Wrapper for `List Directory` that returns only files.</doc>
+<msg timestamp="20220623 14:04:43.894" level="INFO" html="true">Listing contents of directory '&lt;a href="file:///home/eli/Documents/Robots/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados"&gt;/home/eli/Documents/Robots/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados&lt;/a&gt;'.</msg>
+<msg timestamp="20220623 14:04:43.894" level="INFO">0 files:
+</msg>
+<msg timestamp="20220623 14:04:43.894" level="INFO">${ListNaoVis} = []</msg>
+<status status="PASS" starttime="20220623 14:04:43.893" endtime="20220623 14:04:43.894"/>
+</kw>
+<for flavor="IN">
+<var>${file}</var>
+<value>@{ListNaoVis}</value>
+<status status="PASS" starttime="20220623 14:04:43.894" endtime="20220623 14:04:43.894"/>
+</for>
+<kw name="Close All Browsers" library="RPA.Browser.Selenium">
+<doc>Closes all open browsers and resets the browser cache.</doc>
+<status status="PASS" starttime="20220623 14:04:43.894" endtime="20220623 14:04:43.952"/>
+</kw>
+<status status="PASS" starttime="20220623 14:04:43.893" endtime="20220623 14:04:43.952"/>
+</test>
+<doc>Robô para receber e distribuir processos SEI</doc>
+<status status="PASS" starttime="20220623 14:04:36.264" endtime="20220623 14:04:43.953"/>
+</suite>
+<statistics>
+<total>
+<stat pass="4" fail="0" skip="0">All Tasks</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat pass="4" fail="0" skip="0" id="s1" name="RecDistProc">RecDistProc</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
