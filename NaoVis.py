@@ -1,17 +1,21 @@
 from datetime import datetime as dt
-from time import strftime
-from unittest import result
-from zlib import DEF_MEM_LEVEL
 from bs4 import BeautifulSoup
 import re
+import os
+import json
 
-NaoVis=open('/tmp/automations/NaoVis.txt')
+Dir_tmp = '/tmp'
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+print('Lendo arquivos temporários...')
+NaoVis = open(Dir_tmp+'/recdistproc/NaoVis.txt')
 
 soup = BeautifulSoup(NaoVis, 'html.parser')
 
 naovis_list = soup.find_all("a", class_="processoVisualizado")
 
 for s in naovis_list:
+  print('Processando dados de arquivo temporário...')
   strdt_now=dt.now().strftime("%Y%m%d%H%M%S%f")
   s=str(s)
 
@@ -27,12 +31,50 @@ for s in naovis_list:
   result=re.search('>(.*)</a>', s)
   num_proc=result.group(1)
 
-  p_doc=open('/home/eli/Robots/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados/'+strdt_now+'.csv', 'w')
-  p_doc.write(num_proc+';'+id_proc+';'+tip_proc+';'+spec_proc)
-  p_doc.close()
-  
+  dtnow = str(dt.now())
+  data = {'MetaData':
+    [
+      {'IdTarefaRecebimentoDoProcesso': strdt_now},
+      {'DatetimeCriacaoTarefaRecebimento': dtnow}
+    ],
+    'ProcessData':
+    [
+      {'IdProcedimentoDoProcesso': id_proc},
+      {'NumeroDoProcessoSei': num_proc},
+      {'TipoDoProcesso': tip_proc},
+      {'EspecificacaoDoProcesso': spec_proc},
+      {'BoolProcessoRestrito': ''},
+      {'BoolInformacaoPessoal': ''},
+      {'MotivacaoProcessoRestrito': ''},
+      {'RetornoProgramado': ''},
+      {'GrupoAcompanhamentoEspecial': ''},
+      {'GrupoMarcador': ''},
+      {'UnidadesComProcessoAbertoNoMomentoDaCriacaoDaTarefa': ''},
+      {'UltimoSetorRemetenteDoProcesso': ''},
+      {'NumeroProtocoloUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
+      {'DataDoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
+      {'TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
+      {'IDUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
+      {'InformacaoSobreAssinaturaDoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
+      {'TrechoInicialUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
+      {'DataAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor': ''},
+      {'NumeroProtocoloUltimoDocumentoAssinadoNoSetorReceptor': ''},
+      {'TipoUltimoDocumentoAssinadoNoSetorReceptor': ''},
+      {'InformacaoAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor': ''},
+      {'TrechoInicialDoUltimoDocumentoAssinadoNoSetorReceptor': ''},
+      {'DeclaracaoAcercaMencaoUnidadeAtualNoUltimoDocumentoAssinadoPeloUltimoRemetente': ''},
+      {'IDUltimoSignatarioAPartirNoSetorReceptorPertecenteAUnidadeAtual': ''},
+      {'Prioridade': ''},
+      {'Atribuicao': ''}
+    ]
+  }
+  print('Serializando dados...')
+  json_object = json.dumps(data)
+  with open(dir_path+'/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados/'+strdt_now+'.json', 'w') as outfile:
+    outfile.write(json_object)
+  print('Arquivo de processo criado: '+strdt_now+'.json.')
 NaoVis.close()
-  
+print('Processamento inicial terminado.')
 
 
 
