@@ -1,2 +1,5 @@
 *.html
 *.xml
+**/home/eli/PycharmProjects/SeiRecpData/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados/*
+**/home/eli/PycharmProjects/SeiRecpData/F1_Receber_Distribuir_Processos/2_Processos_Visualizados/*
+**/home/eli/PycharmProjects/SeiRecpData/F1_Receber_Distribuir_Processos/3_Processos_Registrados/*
