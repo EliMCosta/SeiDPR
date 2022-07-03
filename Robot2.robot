@@ -250,10 +250,6 @@ Visualizar processos e extrair informações adicionais
 
 
 
-
-
-
-
         # Ir para o último documento antes do envio pelo último setor remetente
         Unselect Frame
         Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_last_rem}
