@@ -286,20 +286,41 @@ Visualizar processos e extrair informações adicionais
         ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoSetorReceptor    ${type_doc_last_atual}
         Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
 
-
-
-
-
-
-
-        # Ir para o último documento antes do envio pelo último setor remetente
+        # Ir para o último documento do setor remetente antes do envio do processo
         Unselect Frame
         Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_last_rem}
         RPA.Browser.Selenium.Press Keys    //*[@id="txtPesquisaRapida"]    ENTER
-        Sleep    5s
+        Sleep    500ms
+        Unselect Frame
+        Select Frame    id=ifrVisualizacao
+        Select Frame    id=ifrArvoreHtml
+
+        ${url_last_doc_last_rem}    Get Location
+        @{var1}    Split String    ${url_last_doc_last_rem}    id_protocolo=
+        ${var2}=    Set Variable    ${var1}[1]
+        @{var3}    Split String    ${var2}    &infra_sistema
+        ${id_last_doc_last_rem}=    Set Variable    ${var3}[0]
+        #Log    id_last_doc_last_rem: ${id_last_doc_last_rem}   console=True
+        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].IDUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${id_last_doc_last_rem}
+        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+
+
+        ${text_last_doc_last_rem}    Get Text    //body
+        RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/text_last_doc_last_rem.txt    ${text_last_doc_last_rem}    overwrite=True
+
+
+
+
+        # Ir para o último documento do setor atual antes do envio pelo último setor remetente
+        Unselect Frame
         Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_last_atual}
         RPA.Browser.Selenium.Press Keys    //*[@id="txtPesquisaRapida"]    ENTER
-        Sleep    5s
+        Sleep    500ms
+        Unselect Frame
+        Select Frame    id=ifrVisualizacao
+
+
+
 
         #OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/hist.txt
         Exit For Loop    #temporário
