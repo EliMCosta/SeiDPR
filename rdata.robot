@@ -11,7 +11,7 @@ Library    Collections
 Library    RPA.JSON
 Library    DateTime
 Library    TrataInfoArvore.py
-Library    TrataHist2.py
+Library    TrataHist.py
 
 *** Variables ***
 ${Browser}    chrome
