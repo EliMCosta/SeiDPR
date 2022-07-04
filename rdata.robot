@@ -255,7 +255,7 @@ Visualizar processos e extrair informações adicionais
             Wait Until Page Contains    Ver    timeout= 5
             ${hist_andamento}    Get Text    //body
             RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
-            ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorRemetente
+            ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual
             ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_atual}
             IF    ${isEmpty} == True
                 ${existe_prox_pag_hist}    Does Page Contain Element    //*[@id="lnkInfraProximaPaginaSuperior"]
