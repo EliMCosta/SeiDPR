@@ -1,4 +1,4 @@
 import robot
 
 logFile = open('mylog.txt', 'w')
-robot.run("rdata.robot", stdout=logFile)
+robot.run("dpr.robot", stdout=logFile)
