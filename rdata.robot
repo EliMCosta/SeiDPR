@@ -307,11 +307,14 @@ Visualizar processos e extrair informações adicionais
 
         ${text_last_doc_last_rem}    Get Text    //body
         @{var1}    Split String    ${text_last_doc_last_rem}    Documento assinado eletronicamente por
+        ${var2}=    Set Variable    ${var1}[1]
+        @{var3}    Split String    ${var2}    \nA autenticidade do documento pode ser conferida no site:
         ${text_last_doc_last_rem}=    Set Variable    ${var1}[0]
-        #Log    var2: ${var1}   console=True
+        ${info_sign_last_doc_last_rem}=    Set Variable    Documento assinado eletronicamente por${var3}[0]
+
         ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${text_last_doc_last_rem}
+        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].InformacaoSobreAssinaturaDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${info_sign_last_doc_last_rem}
         Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
-        #RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/text_last_doc_last_rem.txt    ${text_last_doc_last_rem}    overwrite=True
 
 
 
