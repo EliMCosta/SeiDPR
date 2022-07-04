@@ -68,3 +68,33 @@ def DadosUltimoDocumentoAssinadoSetorRemetente():
     DadosUltimoDocumentoAssinadoSetorRemetente = [DataUltimoDocumentoAssinadoSetorRemetente, UltimoDocumentoAssinadoSetorRemetente, TipoUltimoDocumentoAssinadoSetorRemetente]
 
     return DadosUltimoDocumentoAssinadoSetorRemetente
+
+def DadosUltimoDocumentoAssinadoSetorAtual():
+    Dir_tmp = '/tmp'
+    UnidadeAtual = "TERRACAP/PRESI/ASINF"
+    with open(Dir_tmp+'/recdistproc/hist.txt') as f:
+        lines = f.readlines()
+        for index, line in enumerate(lines):
+            if (UnidadeAtual in line) and ("Assinado Documento" in line):
+
+                list_string = line.split(" ")
+                DataUltimoDocumentoAssinadoSetorAtual = list_string[0]
+
+                list_string = line.split("Assinado Documento ")
+                var1 = list_string[1]
+                list_string = var1.split(" (")
+                UltimoDocumentoAssinadoSetorAtual = list_string[0]
+
+                list_string = line.split(" (")
+                var1 = list_string[1]
+                list_string = var1.split(") ")
+                TipoUltimoDocumentoAssinadoSetorAtual = list_string[0]
+
+                if DataUltimoDocumentoAssinadoSetorAtual != "":
+                    break
+            else:
+                DataUltimoDocumentoAssinadoSetorAtual = ""
+
+    DadosUltimoDocumentoAssinadoSetorAtual = [DataUltimoDocumentoAssinadoSetorAtual, UltimoDocumentoAssinadoSetorAtual, TipoUltimoDocumentoAssinadoSetorAtual]
+
+    return DadosUltimoDocumentoAssinadoSetorAtual

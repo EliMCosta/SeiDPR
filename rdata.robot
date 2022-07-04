@@ -12,6 +12,7 @@ Library    RPA.JSON
 Library    DateTime
 Library    TrataInfoArvore.py
 Library    TrataHist.py
+Library    ProcessaDocs.py
 
 *** Variables ***
 ${Browser}    chrome
@@ -243,9 +244,51 @@ Visualizar processos e extrair informações adicionais
 
 
         ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${date_last_doc_last_rem}
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].IDUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${last_doc_last_rem}
+        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${last_doc_last_rem}
         ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${type_doc_last_rem}
         Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+
+        # Dados último documento assinado no setor atual
+        FOR    ${index}    IN RANGE    100
+            Unselect Frame
+            Select Frame    id=ifrVisualizacao
+            Wait Until Page Contains    Ver    timeout= 5
+            ${hist_andamento}    Get Text    //body
+            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+            ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorRemetente
+            ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_atual}
+            IF    ${isEmpty} == True
+                ${existe_prox_pag_hist}    Does Page Contain Element    //*[@id="lnkInfraProximaPaginaSuperior"]
+                IF    ${existe_prox_pag_hist} == True
+                    RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
+                    ${hist_andamento}    Get Text    //body
+                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+                    ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual
+                ELSE
+                    IF    ${dados_last_doc_atual} == ""
+                        ${dados_last_doc_atual}    Set Variable    NOT FOUND
+                    ELSE
+                        #Nothing to do
+                    END
+                END
+            ELSE
+                Exit For Loop
+            END
+        END
+
+        ${date_last_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[0]
+        ${last_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[1]
+        ${type_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[2]
+
+
+        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor    ${date_last_doc_last_atual}
+        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoSetorReceptor    ${last_doc_last_atual}
+        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoSetorReceptor    ${type_doc_last_atual}
+        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+
+
+
+
 
 
 
@@ -254,7 +297,9 @@ Visualizar processos e extrair informações adicionais
         Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_last_rem}
         RPA.Browser.Selenium.Press Keys    //*[@id="txtPesquisaRapida"]    ENTER
         Sleep    5s
-
+        Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_last_atual}
+        RPA.Browser.Selenium.Press Keys    //*[@id="txtPesquisaRapida"]    ENTER
+        Sleep    5s
 
         #OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/hist.txt
         Exit For Loop    #temporário
