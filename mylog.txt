@@ -1,5 +1,5 @@
 ==============================================================================
-Rdata :: Automação para recuperar e salvar dados de processos SEI recebidos...
+Dpr :: Automação para recuperar e salvar dados de processos SEI recebidos n...
 ==============================================================================
 Criar diretórios                                                      | PASS |
 ------------------------------------------------------------------------------
@@ -9,7 +9,7 @@ Monitorar SEI                                                         | PASS |
 ------------------------------------------------------------------------------
 Visualizar processos e extrair informações adicionais                 | PASS |
 ------------------------------------------------------------------------------
-Rdata :: Automação para recuperar e salvar dados de processos SEI ... | PASS |
+Dpr :: Automação para recuperar e salvar dados de processos SEI re... | PASS |
 4 tasks, 4 passed, 0 failed
 ==============================================================================
 Output:  /home/eli/PycharmProjects/SeiRecpData/output.xml
