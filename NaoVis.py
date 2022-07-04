@@ -59,10 +59,10 @@ for s in naovis_list:
       {'TipoUltimoDocumentoAssinadoNoSetorReceptor': ''},
       {'IDUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
       {'InformacaoSobreAssinaturaDoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
-      {'TrechoInicialUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
+      {'TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
       {'MencaoUnidadeAtualNoUltimoDocumentoAssinadoPeloUltimoRemetente': ''},
       {'InformacaoAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor': ''},
-      {'TrechoInicialDoUltimoDocumentoAssinadoNoSetorReceptor': ''},
+      {'TextoDoUltimoDocumentoAssinadoNoSetorReceptor': ''},
       {'IDUltimoSignatarioAPartirNoSetorReceptorPertecenteAUnidadeAtual': ''},
       {'Prioridade': ''},
       {'Atribuicao': ''}

@@ -306,7 +306,12 @@ Visualizar processos e extrair informações adicionais
 
 
         ${text_last_doc_last_rem}    Get Text    //body
-        RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/text_last_doc_last_rem.txt    ${text_last_doc_last_rem}    overwrite=True
+        @{var1}    Split String    ${text_last_doc_last_rem}    Documento assinado eletronicamente por
+        ${text_last_doc_last_rem}=    Set Variable    ${var1}[0]
+        #Log    var2: ${var1}   console=True
+        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${text_last_doc_last_rem}
+        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+        #RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/text_last_doc_last_rem.txt    ${text_last_doc_last_rem}    overwrite=True
 
 
 
