@@ -1,4 +1,0 @@
-1- Pode ser que, ainda que raro, sejam cadastradas mais de uma tarefa para um mesmo recebimento.
-
-Lembrete: pkill python3 pra matar o processo
-

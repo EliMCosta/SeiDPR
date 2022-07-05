@@ -28,6 +28,7 @@ ${Dir_tmp}    /tmp
 
 *** Keywords ***
 Entrar no SEI
+    [Timeout]    10 seconds
     ${senha_sei}    senha_sei
     Open Browser   ${URL_SEI}    browser=${Browser}
     Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s
@@ -36,6 +37,7 @@ Entrar no SEI
     Select From List By Value    selOrgao    ${value_Orgao}
     Click Button When Visible    sbmLogin
 Ir para o SEI e autenticar
+    [Timeout]    10 seconds
     ${senha_sei}    senha_sei
     Go To   ${URL_SEI}
     Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s
@@ -63,11 +65,16 @@ Gerar não visualizados SEI
 Criar diretórios
     Log    Diretório atual: ${CURDIR}    console=True
     OperatingSystem.Create Directory    ${Dir_tmp}/recdistproc
+    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos
+    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados
+    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/2_Processos_Visualizados
+    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/3_Processos_Registrados
 Autenticar no SEI
+    [Timeout]    15 seconds
     Log    Autenticando no SEI...    console=True
     Run Keyword   Entrar no SEI
-    Sleep   5s
-    #Wait Until Page Contains    Controle de Processos    timeout=5
+    #Sleep   5s
+    Wait Until Page Contains    Controle de Processos    timeout=5
     ${pag_contem_controledeprocessos}    Does Page Contain    Controle de Processos
     IF    ${pag_contem_controledeprocessos} == ${True}
         Log    Login realizado com sucesso.    console=True
