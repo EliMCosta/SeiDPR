@@ -15,16 +15,18 @@ Library    TrataHist.py
 Library    ProcessaDocs.py
 
 *** Variables ***
+#Variáveis de configuração
 ${Browser}    chrome
 ${URL_SEI}    https://sei.df.gov.br
 ${login_sei}    92100027740
-${value_Orgao}    21
+${orgao}    TERRACAP
 ${unidade}    TERRACAP/PRESI/ASINF
-${pag_hist}    0
-${Dir_NaoVisualizados}    ${CURDIR}/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados
-${Dir_Visualizados}    ${CURDIR}/F1_Receber_Distribuir_Processos/2_Processos_Visualizados
-${Dir_Registrados}    ${CURDIR}/F1_Receber_Distribuir_Processos/3_Processos_Registrados
-${Dir_tmp}    /tmp
+#Nomes de diretórios
+${Dir_Dados}    ${CURDIR}/data
+${Dir_NaoVisualizados}    ${Dir_Dados}/1_Processos_Nao_Visualizados
+${Dir_Visualizados}    ${Dir_Dados}/2_Processos_Visualizados
+${Dir_Registrados}    ${Dir_Dados}/3_Processos_Registrados
+${Dir_tmp}    ${Dir_Dados}/tmp
 
 *** Keywords ***
 Entrar no SEI
@@ -34,27 +36,25 @@ Entrar no SEI
     Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s
     Input Text    txtUsuario    ${login_sei}
     Input Text    pwdSenha    ${senha_sei}
-    Select From List By Value    selOrgao    ${value_Orgao}
+    Select From List By Label    selOrgao    ${orgao}
     Click Button When Visible    sbmLogin
 Ir para o SEI e autenticar
     [Timeout]    10 seconds
     ${senha_sei}    senha_sei
     Go To   ${URL_SEI}
     Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s
-    Sleep   1s
     Input Text    txtUsuario    ${login_sei}
-    Sleep   1s
     Input Text    pwdSenha    ${senha_sei}
-    Sleep   1s
-    Select From List By Value    selOrgao    ${value_Orgao}
-    Sleep   1s
+    Select From List By Label    selOrgao    ${orgao}
     Click Button When Visible    sbmLogin
 Gerar não visualizados SEI
+#main-menu > li:nth-child(1) > a
+    Wait Until Page Contains Element    //*[@id="main-menu"]/li[1]/a
     RPA.Browser.Selenium.Click Element    //*[@id="main-menu"]/li[1]/a
     ${Source}    Get Source
-    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/NaoVis.txt    ${Source}    overwrite=True
+    RPA.FileSystem.Create File    ${Dir_tmp}/NaoVis.txt    ${Source}    overwrite=True
     #Gerar arquivo com informações básicas para cada processo não visualizado
-    Run Process    python3    ${CURDIR}/NaoVis.py
+    Run Process    python3    ${CURDIR}/src/NaoVis.py
 
 *** Tasks ***
 
@@ -64,11 +64,11 @@ Gerar não visualizados SEI
 
 Criar diretórios
     Log    Diretório atual: ${CURDIR}    console=True
-    OperatingSystem.Create Directory    ${Dir_tmp}/recdistproc
-    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos
-    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados
-    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/2_Processos_Visualizados
-    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/3_Processos_Registrados
+    OperatingSystem.Create Directory    ${Dir_Dados}
+    OperatingSystem.Create Directory    ${Dir_NaoVisualizados}
+    OperatingSystem.Create Directory    ${Dir_Visualizados}
+    OperatingSystem.Create Directory    ${Dir_Registrados}
+    OperatingSystem.Create Directory    ${Dir_tmp}
 Autenticar no SEI
     [Timeout]    15 seconds
     Log    Autenticando no SEI...    console=True
@@ -87,12 +87,13 @@ Autenticar no SEI
     Switch Window    ${windowhandles}[0]
 Monitorar SEI
     Log    Verificando se há processos novos recebidos...    console=True
-    Gerar não visualizados SEI        #Arquivos *.csv de processos não visualizados no diretório
-    OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/NaoVis.txt
+    Gerar não visualizados SEI
+    OperatingSystem.Remove File    ${Dir_tmp}/NaoVis.txt
     ${ListNaoVis}    OperatingSystem.List Files In Directory    ${Dir_NaoVisualizados}
-    ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${ListNaoVis}
-    IF    ${isEmpty} == True
+    ${isEmptyListNaoVis}    Run Keyword And Return Status    Should Be Empty    ${ListNaoVis}
+    IF    ${isEmptyListNaoVis} == True
         Log    Nenhum novo processo recebido.    console=True
+        Fatal Error    Fim da tarefa.
     ELSE
         Log    Novo(s) processo(s) recebido(s):    console=True
         Log    ${ListNaoVis}    console=True
@@ -135,9 +136,9 @@ Visualizar processos e extrair informações adicionais
         Unselect Frame
         Select Frame    id=ifrVisualizacao
         ${hist_andamento}    Get Text    //body
-        RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+        RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
 
-        # Histórico de andamento armazenado no arquivo temporário ${Dir_tmp}/recdistproc/hist.txt
+        # Histórico de andamento armazenado no arquivo temporário ${Dir_tmp}/hist.txt
 
         ##################################### Capturar fonte da árvore do processo ###################################
 
@@ -147,9 +148,9 @@ Visualizar processos e extrair informações adicionais
         Select Frame    id=ifrArvore
         Sleep    50ms
         ${src_arvore}    Get Source
-        RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/src_arvore.txt    ${src_arvore}    overwrite=True
+        RPA.FileSystem.Create File    ${Dir_tmp}/src_arvore.txt    ${src_arvore}    overwrite=True
 
-        # Dados brutos da árvore do processo armazanados no arquivo temporário ${Dir_tmp}/recdistproc/src_arvore.txt
+        # Dados brutos da árvore do processo armazanados no arquivo temporário ${Dir_tmp}/src_arvore.txt
 
         ##################################### Processar e recuperar dados da árvore do processo ########################
 
@@ -167,7 +168,7 @@ Visualizar processos e extrair informações adicionais
         #Log    marcadorGroup: ${marcadorGroup}   console=True
         ${set_infoadicionais}    set_infoadicionais
         #Log    set_infoadicionais: ${set_infoadicionais}   console=True
-        OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/src_arvore.txt
+        OperatingSystem.Remove File    ${Dir_tmp}/src_arvore.txt
 
         ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].BoolProcessoRestrito    ${isRestrict}
         ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].BoolInformacaoPessoal    ${isPersonalInfo}
@@ -194,7 +195,7 @@ Visualizar processos e extrair informações adicionais
             Select Frame    id=ifrVisualizacao
             Wait Until Page Contains    Ver    timeout= 5
             ${hist_andamento}    Get Text    //body
-            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+            RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
             ${ultimo_setor_remetente}    UltimoSetorRemetenteDoProcesso
             ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${ultimo_setor_remetente}
             IF    ${isEmpty} == True
@@ -202,7 +203,7 @@ Visualizar processos e extrair informações adicionais
                 IF    ${existe_prox_pag_hist} == True
                     RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
                     ${hist_andamento}    Get Text    //body
-                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+                    RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
                     ${ultimo_setor_remetente}    UltimoSetorRemetenteDoProcesso
                 ELSE
                     ${ultimo_setor_remetente}    Set Variable    NOT FOUND
@@ -223,7 +224,7 @@ Visualizar processos e extrair informações adicionais
             Select Frame    id=ifrVisualizacao
             Wait Until Page Contains    Ver    timeout= 5
             ${hist_andamento}    Get Text    //body
-            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+            RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
             ${dados_last_doc_rem}    DadosUltimoDocumentoAssinadoSetorRemetente
             ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_rem}
             IF    ${isEmpty} == True
@@ -231,7 +232,7 @@ Visualizar processos e extrair informações adicionais
                 IF    ${existe_prox_pag_hist} == True
                     RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
                     ${hist_andamento}    Get Text    //body
-                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+                    RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
                     ${dados_last_doc_rem}    DadosUltimoDocumentoAssinadoSetorRemetente
                 ELSE
                     IF    ${dados_last_doc_rem} == ""
@@ -261,7 +262,7 @@ Visualizar processos e extrair informações adicionais
             Select Frame    id=ifrVisualizacao
             Wait Until Page Contains    Ver    timeout= 5
             ${hist_andamento}    Get Text    //body
-            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+            RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
             ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual
             ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_atual}
             IF    ${isEmpty} == True
@@ -269,7 +270,7 @@ Visualizar processos e extrair informações adicionais
                 IF    ${existe_prox_pag_hist} == True
                     RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
                     ${hist_andamento}    Get Text    //body
-                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
+                    RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
                     ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual
                 ELSE
                     IF    ${dados_last_doc_atual} == ""
@@ -337,7 +338,7 @@ Visualizar processos e extrair informações adicionais
 
 
 
-        #OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/hist.txt
+        #OperatingSystem.Remove File    ${Dir_tmp}/hist.txt
         Exit For Loop    #temporário
     END
     Go To    https://sei.df.gov.br/sei
@@ -355,7 +356,7 @@ Visualizar processos e extrair informações adicionais
 
 #Criar diretórios
 #    Log    Diretório atual: ${CURDIR}    console=True
-#    OperatingSystem.Create Directory    ${Dir_tmp}/recdistproc
+#    OperatingSystem.Create Directory    ${Dir_tmp}
 #Assegurar autenticação no SEI
 #    Go To   ${URL_SEI}/sei
 #    ${isAuthenticated}    Run Keyword And Return Status    Page Should Contain   Controle de Processos
@@ -377,7 +378,7 @@ Visualizar processos e extrair informações adicionais
 #        END
 #    END
 #
-#    #Remove Files    ${Dir_tmp}/recdistproc/hist.txt
+#    #Remove Files    ${Dir_tmp}/hist.txt
 #
-#    #Remove Directory    ${Dir_tmp}/recdistproc
+#    #Remove Directory    ${Dir_tmp}
 #    Close All Browsers

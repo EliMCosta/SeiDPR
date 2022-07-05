@@ -4,11 +4,14 @@ import re
 import os
 import json
 
-Dir_tmp = '/tmp'
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
+var1 = dir_path.split('/src')
+Dir_tmp = var1[0]+'/data/tmp'
+Dir_NaoVisualisados = var1[0]+'/data/1_Processos_Nao_Visualizados/'
+
 print('Lendo arquivos temporários...')
-NaoVis = open(Dir_tmp+'/recdistproc/NaoVis.txt')
+NaoVis = open(Dir_tmp+'/NaoVis.txt')
 
 soup = BeautifulSoup(NaoVis, 'html.parser')
 
@@ -72,7 +75,7 @@ for s in naovis_list:
   }
   print('Serializando dados...')
   json_object = json.dumps(data)
-  with open(dir_path+'/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados/'+strdt_now+'.json', 'w') as outfile:
+  with open(Dir_NaoVisualisados+strdt_now+'.json', 'w') as outfile:
     outfile.write(json_object)
   print('Arquivo de processo criado: '+strdt_now+'.json.')
 NaoVis.close()

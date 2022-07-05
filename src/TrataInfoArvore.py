@@ -1,8 +1,11 @@
 ############################################# Recuperar dados da árvore ################################################
 def isRestrict():
     from bs4 import BeautifulSoup
-    Dir_tmp = '/tmp'
-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
+    src_arvore = open(Dir_tmp+'/src_arvore.txt')
     soup = BeautifulSoup(src_arvore, 'html.parser')
     object_list = soup.find("div", {"id":"topmenu"})
     strObject = str(object_list)
@@ -14,8 +17,11 @@ def isRestrict():
 
 def isPersonalInfo():
     from bs4 import BeautifulSoup
-    Dir_tmp = '/tmp'
-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
+    src_arvore = open(Dir_tmp+'/src_arvore.txt')
     soup = BeautifulSoup(src_arvore, 'html.parser')
     object_list = soup.find("div", {"id":"topmenu"})
     strObject = str(object_list)
@@ -27,8 +33,11 @@ def isPersonalInfo():
 
 def isRetornoProgramado():
     from bs4 import BeautifulSoup
-    Dir_tmp = '/tmp'
-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
+    src_arvore = open(Dir_tmp+'/src_arvore.txt')
     soup = BeautifulSoup(src_arvore, 'html.parser')
     object_list = soup.find("div", {"id":"topmenu"})
     strObject = str(object_list)
@@ -40,8 +49,11 @@ def isRetornoProgramado():
 
 def dateRetornoProgramado():
     from bs4 import BeautifulSoup
-    Dir_tmp = '/tmp'
-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
+    src_arvore = open(Dir_tmp+'/src_arvore.txt')
     soup = BeautifulSoup(src_arvore, 'html.parser')
     object_list = soup.find("div", {"id":"topmenu"})
     strObject = str(object_list)
@@ -59,8 +71,11 @@ def dateRetornoProgramado():
 
 def restrictMotivation():
     from bs4 import BeautifulSoup
-    Dir_tmp = '/tmp'
-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
+    src_arvore = open(Dir_tmp+'/src_arvore.txt')
     soup = BeautifulSoup(src_arvore, 'html.parser')
     object_list = soup.find("div", {"id":"topmenu"})
     strObject = str(object_list)
@@ -78,8 +93,11 @@ def restrictMotivation():
 
 def acompEspGroup():
     from bs4 import BeautifulSoup
-    Dir_tmp = '/tmp'
-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
+    src_arvore = open(Dir_tmp+'/src_arvore.txt')
     soup = BeautifulSoup(src_arvore, 'html.parser')
     object_list = soup.find("div", {"id":"topmenu"})
     strObject = str(object_list)
@@ -98,8 +116,11 @@ def acompEspGroup():
 
 def marcadorGroup():
     from bs4 import BeautifulSoup
-    Dir_tmp = '/tmp'
-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
+    src_arvore = open(Dir_tmp+'/src_arvore.txt')
     soup = BeautifulSoup(src_arvore, 'html.parser')
     object_list = soup.find("div", {"id":"topmenu"})
     strObject = str(object_list)
@@ -118,8 +139,11 @@ def marcadorGroup():
 
 def set_infoadicionais():
     from bs4 import BeautifulSoup
-    Dir_tmp = '/tmp'
-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
+    src_arvore = open(Dir_tmp+'/src_arvore.txt')
     soup = BeautifulSoup(src_arvore, 'html.parser')
     object_list = soup.find()
     strObject=str(object_list)
@@ -158,5 +182,3 @@ def set_infoadicionais():
     del strObject
     del info_adicionais
     return set_infoadicionais
-
-#END

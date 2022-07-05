@@ -1,8 +1,11 @@
 #Funções de tratamento do histórico
 def UltimoSetorRemetenteDoProcesso():
-    Dir_tmp = '/tmp'
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
     UnidadeAtual = "TERRACAP/PRESI/ASINF"
-    with open(Dir_tmp+'/recdistproc/hist.txt') as f:
+    with open(Dir_tmp+'/hist.txt') as f:
         lines = f.readlines()
         for index, line in enumerate(lines):
             if ("Processo remetido pela unidade") in line:
@@ -24,9 +27,12 @@ def UltimoSetorRemetenteDoProcesso():
     return UltimoSetorRemetente
 
 def DadosUltimoDocumentoAssinadoSetorRemetente():
-    Dir_tmp = '/tmp'
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
     UnidadeAtual = "TERRACAP/PRESI/ASINF"
-    with open(Dir_tmp+'/recdistproc/hist.txt') as f:
+    with open(Dir_tmp+'/hist.txt') as f:
         lines = f.readlines()
         for index, line in enumerate(lines):
             if ("Processo remetido pela unidade") in line:
@@ -70,9 +76,12 @@ def DadosUltimoDocumentoAssinadoSetorRemetente():
     return DadosUltimoDocumentoAssinadoSetorRemetente
 
 def DadosUltimoDocumentoAssinadoSetorAtual():
-    Dir_tmp = '/tmp'
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    var1 = dir_path.split('/src')
+    Dir_tmp = var1[0] + '/data/tmp'
     UnidadeAtual = "TERRACAP/PRESI/ASINF"
-    with open(Dir_tmp+'/recdistproc/hist.txt') as f:
+    with open(Dir_tmp+'/hist.txt') as f:
         lines = f.readlines()
         for index, line in enumerate(lines):
             if (UnidadeAtual in line) and ("Assinado Documento" in line):
