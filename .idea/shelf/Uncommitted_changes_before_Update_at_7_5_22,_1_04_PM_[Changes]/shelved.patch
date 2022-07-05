@@ -1,0 +1,485 @@
+Index: dpr.robot
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>*** Settings ***\nDocumentation    Automação para recuperar e salvar dados de processos SEI recebidos na unidade\nLibrary    RPA.Browser.Selenium\nLibrary    RPA.Desktop\nLibrary    Process\nLibrary    PassRetrieve.py\nLibrary    RPA.FileSystem\nLibrary    OperatingSystem\nLibrary    String\nLibrary    Collections\nLibrary    RPA.JSON\nLibrary    DateTime\nLibrary    TrataInfoArvore.py\nLibrary    TrataHist.py\nLibrary    ProcessaDocs.py\n\n*** Variables ***\n${Browser}    chrome\n${URL_SEI}    https://sei.df.gov.br\n${login_sei}    92100027740\n${value_Orgao}    21\n${unidade}    TERRACAP/PRESI/ASINF\n${pag_hist}    0\n${Dir_NaoVisualizados}    ${CURDIR}/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados\n${Dir_Visualizados}    ${CURDIR}/F1_Receber_Distribuir_Processos/2_Processos_Visualizados\n${Dir_Registrados}    ${CURDIR}/F1_Receber_Distribuir_Processos/3_Processos_Registrados\n${Dir_tmp}    /tmp\n\n*** Keywords ***\nEntrar no SEI\n    [Timeout]    10 seconds\n    ${senha_sei}    senha_sei\n    Open Browser   ${URL_SEI}    browser=${Browser}\n    Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s\n    Input Text    txtUsuario    ${login_sei}\n    Input Text    pwdSenha    ${senha_sei}\n    Select From List By Value    selOrgao    ${value_Orgao}\n    Click Button When Visible    sbmLogin\nIr para o SEI e autenticar\n    [Timeout]    10 seconds\n    ${senha_sei}    senha_sei\n    Go To   ${URL_SEI}\n    Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s\n    Sleep   1s\n    Input Text    txtUsuario    ${login_sei}\n    Sleep   1s\n    Input Text    pwdSenha    ${senha_sei}\n    Sleep   1s\n    Select From List By Value    selOrgao    ${value_Orgao}\n    Sleep   1s\n    Click Button When Visible    sbmLogin\nGerar não visualizados SEI\n    RPA.Browser.Selenium.Click Element    //*[@id=\"main-menu\"]/li[1]/a\n    ${Source}    Get Source\n    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/NaoVis.txt    ${Source}    overwrite=True\n    #Gerar arquivo com informações básicas para cada processo não visualizado\n    Run Process    python3    ${CURDIR}/NaoVis.py\n\n*** Tasks ***\n\n#****************************************** CICLO 1 *******************************************************************\n\n################################################ FASE 1 ################################################################\n\nCriar diretórios\n    Log    Diretório atual: ${CURDIR}    console=True\n    OperatingSystem.Create Directory    ${Dir_tmp}/recdistproc\n    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos\n    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados\n    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/2_Processos_Visualizados\n    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/3_Processos_Registrados\nAutenticar no SEI\n    [Timeout]    15 seconds\n    Log    Autenticando no SEI...    console=True\n    Run Keyword   Entrar no SEI\n    #Sleep   5s\n    Wait Until Page Contains    Controle de Processos    timeout=5\n    ${pag_contem_controledeprocessos}    Does Page Contain    Controle de Processos\n    IF    ${pag_contem_controledeprocessos} == ${True}\n        Log    Login realizado com sucesso.    console=True\n    ELSE\n        Fatal Error    Falha no login.\n    END\n    ${windowhandles}=    Get Window Handles\n    Switch Window    ${windowhandles}[1]\n    Close Window\n    Switch Window    ${windowhandles}[0]\nMonitorar SEI\n    Log    Verificando se há processos novos recebidos...    console=True\n    Gerar não visualizados SEI        #Arquivos *.csv de processos não visualizados no diretório\n    OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/NaoVis.txt\n    ${ListNaoVis}    OperatingSystem.List Files In Directory    ${Dir_NaoVisualizados}\n    ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${ListNaoVis}\n    IF    ${isEmpty} == True\n        Log    Nenhum novo processo recebido.    console=True\n    ELSE\n        Log    Novo(s) processo(s) recebido(s):    console=True\n        Log    ${ListNaoVis}    console=True\n    END\n    Log    ...fim da verificação.    console=True\n\n############################################### FASE 2 #################################################################\n\nVisualizar processos e extrair informações adicionais\n    #Ler lista de processos não visualizados\n    ${ListNaoVis}    OperatingSystem.List Files In Directory    ${Dir_NaoVisualizados}\n    Log    Iniciando a visualização de processos...    console=True\n    #Extrair informações de cada processo\n    FOR    ${file}    IN    @{ListNaoVis}\n        #Buscar dados básicos do processo administrativo atual\n        Log    Processando ${file}...   console=True\n        ${date}=    Get Current Date\n        &{all_data}=    Load JSON from file    ${Dir_NaoVisualizados}/${file}\n        ${id_recproc_task_as_list}=    Get values from JSON    ${all_data}    $.MetaData[*].IdTarefaRecebimentoDoProcesso     #NOT  NULL\n        ${num_proc_as_list}=    Get values from JSON    ${all_data}    $.ProcessData[*].NumeroDoProcessoSei     #NOT  NULL\n        ${id_proc_as_list}=    Get values from JSON    ${all_data}    $.ProcessData[*].IdProcedimentoDoProcesso     #NOT  NULL\n        ${tip_proc_as_list}=    Get values from JSON    ${all_data}    $.ProcessData[*].TipoDoProcesso     #NOT  NULL\n        ${spec_proc_as_list}=    Get values from JSON    ${all_data}    $.ProcessData[*].EspecificacaoDoProcesso\n        ${id_recproc_task}=    Get From List    ${id_recproc_task_as_list}    0\n        ${id_proc}=    Get From List    ${id_proc_as_list}    0\n        ${num_proc}=    Get From List    ${num_proc_as_list}    0\n        ${tip_proc}=    Get From List    ${tip_proc_as_list}    0\n        ${spec_proc}=    Get From List    ${spec_proc_as_list}    0\n        #Ir para o processo atual\n        Go To    https://sei.df.gov.br/sei/controlador.php?acao=procedimento_trabalhar&id_procedimento=${id_proc}\n\n        ##################################### Obter dados brutos da primeira página do histórico de andamento ##########\n        #Clicar em \"Consultar andamento\", histórico completo\n        Sleep    500ms\n        Select Frame    id=ifrArvore\n        Wait Until Page Contains Element    //*[@id=\"divConsultarAndamento\"]/a/span    timeout= 5\n        RPA.Browser.Selenium.Click Element    //*[@id=\"divConsultarAndamento\"]/a/span\n\n        #Seleciona a tabela do histórico e copia para arquivo temporário\n        Unselect Frame\n        Select Frame    id=ifrVisualizacao\n        ${hist_andamento}    Get Text    //body\n        RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True\n\n        # Histórico de andamento armazenado no arquivo temporário ${Dir_tmp}/recdistproc/hist.txt\n\n        ##################################### Capturar fonte da árvore do processo ###################################\n\n        #Recuperar o fonte da árvore do processo\n        Sleep    500ms\n        Unselect Frame\n        Select Frame    id=ifrArvore\n        Sleep    50ms\n        ${src_arvore}    Get Source\n        RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/src_arvore.txt    ${src_arvore}    overwrite=True\n\n        # Dados brutos da árvore do processo armazanados no arquivo temporário ${Dir_tmp}/recdistproc/src_arvore.txt\n\n        ##################################### Processar e recuperar dados da árvore do processo ########################\n\n        ${isRestrict}    isRestrict\n        #Log    isRestrict: ${isRestrict}   console=True\n        ${isPersonalInfo}    isPersonalInfo\n        #Log    isPersonalInfo: ${isPersonalInfo}   console=True\n        ${restrictMotivation}    restrictMotivation\n        #Log    restrictMotivation: ${restrictMotivation}   console=True\n        ${retornoProgramado}    dateRetornoProgramado\n        #Log    restrictMotivation: ${restrictMotivation}   console=True\n        ${acompEspGroup}    acompEspGroup\n        #Log    acompEspGroup: ${acompEspGroup}   console=True\n        ${marcadorGroup}    marcadorGroup\n        #Log    marcadorGroup: ${marcadorGroup}   console=True\n        ${set_infoadicionais}    set_infoadicionais\n        #Log    set_infoadicionais: ${set_infoadicionais}   console=True\n        OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/src_arvore.txt\n\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].BoolProcessoRestrito    ${isRestrict}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].BoolInformacaoPessoal    ${isPersonalInfo}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].MotivacaoProcessoRestrito    ${restrictMotivation}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].RetornoProgramado    ${retornoProgramado}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].GrupoAcompanhamentoEspecial    ${acompEspGroup}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].GrupoMarcador    ${marcadorGroup}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].UnidadesComProcessoAbertoNoMomentoDaCriacaoDaTarefa    ${set_infoadicionais}\n        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}\n\n        ################################ Processar e recuperar dados do histórico do andamento do processo #########\n        #Último setor remetente\n        Wait Until Page Contains    Ver    timeout= 5\n        ${pag_contem_resumido}    Does Page Contain    resumido\n        IF    ${pag_contem_resumido} == ${True}\n            #Seleciona a opção pelo histórico resumido\n            Unselect Frame\n            Select Frame    id=ifrVisualizacao\n            RPA.Browser.Selenium.Click Element   //*[@id=\"ancTipoHistorico\"]\n        END\n\n        FOR    ${index}    IN RANGE    100\n            Unselect Frame\n            Select Frame    id=ifrVisualizacao\n            Wait Until Page Contains    Ver    timeout= 5\n            ${hist_andamento}    Get Text    //body\n            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True\n            ${ultimo_setor_remetente}    UltimoSetorRemetenteDoProcesso\n            ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${ultimo_setor_remetente}\n            IF    ${isEmpty} == True\n                ${existe_prox_pag_hist}    Does Page Contain Element    //*[@id=\"lnkInfraProximaPaginaSuperior\"]\n                IF    ${existe_prox_pag_hist} == True\n                    RPA.Browser.Selenium.Click Element    //*[@id=\"lnkInfraProximaPaginaSuperior\"]\n                    ${hist_andamento}    Get Text    //body\n                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True\n                    ${ultimo_setor_remetente}    UltimoSetorRemetenteDoProcesso\n                ELSE\n                    ${ultimo_setor_remetente}    Set Variable    NOT FOUND\n                END\n            ELSE\n                Exit For Loop\n            END\n            ${existe_prox_pag_hist}    Does Page Contain Element    //*[@id=\"lnkInfraProximaPaginaSuperior\"]\n        END\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].UltimoSetorRemetenteDoProcesso    ${ultimo_setor_remetente}\n        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}\n\n\n        #Dados último documento último setor remetente\n\n        FOR    ${index}    IN RANGE    100\n            Unselect Frame\n            Select Frame    id=ifrVisualizacao\n            Wait Until Page Contains    Ver    timeout= 5\n            ${hist_andamento}    Get Text    //body\n            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True\n            ${dados_last_doc_rem}    DadosUltimoDocumentoAssinadoSetorRemetente\n            ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_rem}\n            IF    ${isEmpty} == True\n                ${existe_prox_pag_hist}    Does Page Contain Element    //*[@id=\"lnkInfraProximaPaginaSuperior\"]\n                IF    ${existe_prox_pag_hist} == True\n                    RPA.Browser.Selenium.Click Element    //*[@id=\"lnkInfraProximaPaginaSuperior\"]\n                    ${hist_andamento}    Get Text    //body\n                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True\n                    ${dados_last_doc_rem}    DadosUltimoDocumentoAssinadoSetorRemetente\n                ELSE\n                    IF    ${dados_last_doc_rem} == \"\"\n                        ${dados_last_doc_rem}    Set Variable    NOT FOUND\n                    ELSE\n                        #Nothing to do\n                    END\n                END\n            ELSE\n                Exit For Loop\n            END\n        END\n\n        ${date_last_doc_last_rem}=    Set Variable    ${dados_last_doc_rem}[0]\n        ${last_doc_last_rem}=    Set Variable    ${dados_last_doc_rem}[1]\n        ${type_doc_last_rem}=    Set Variable    ${dados_last_doc_rem}[2]\n\n\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${date_last_doc_last_rem}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${last_doc_last_rem}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${type_doc_last_rem}\n        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}\n\n        # Dados último documento assinado no setor atual\n        FOR    ${index}    IN RANGE    100\n            Unselect Frame\n            Select Frame    id=ifrVisualizacao\n            Wait Until Page Contains    Ver    timeout= 5\n            ${hist_andamento}    Get Text    //body\n            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True\n            ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual\n            ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_atual}\n            IF    ${isEmpty} == True\n                ${existe_prox_pag_hist}    Does Page Contain Element    //*[@id=\"lnkInfraProximaPaginaSuperior\"]\n                IF    ${existe_prox_pag_hist} == True\n                    RPA.Browser.Selenium.Click Element    //*[@id=\"lnkInfraProximaPaginaSuperior\"]\n                    ${hist_andamento}    Get Text    //body\n                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True\n                    ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual\n                ELSE\n                    IF    ${dados_last_doc_atual} == \"\"\n                        ${dados_last_doc_atual}    Set Variable    NOT FOUND\n                    ELSE\n                        #Nothing to do\n                    END\n                END\n            ELSE\n                Exit For Loop\n            END\n        END\n\n        ${date_last_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[0]\n        ${last_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[1]\n        ${type_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[2]\n\n\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor    ${date_last_doc_last_atual}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoSetorReceptor    ${last_doc_last_atual}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoSetorReceptor    ${type_doc_last_atual}\n        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}\n\n        # Ir para o último documento do setor remetente antes do envio do processo\n        Unselect Frame\n        Input Text    //*[@id=\"txtPesquisaRapida\"]    ${last_doc_last_rem}\n        RPA.Browser.Selenium.Press Keys    //*[@id=\"txtPesquisaRapida\"]    ENTER\n        Sleep    500ms\n        Unselect Frame\n        Select Frame    id=ifrVisualizacao\n        Select Frame    id=ifrArvoreHtml\n\n        ${url_last_doc_last_rem}    Get Location\n        @{var1}    Split String    ${url_last_doc_last_rem}    id_protocolo=\n        ${var2}=    Set Variable    ${var1}[1]\n        @{var3}    Split String    ${var2}    &infra_sistema\n        ${id_last_doc_last_rem}=    Set Variable    ${var3}[0]\n        #Log    id_last_doc_last_rem: ${id_last_doc_last_rem}   console=True\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].IDUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${id_last_doc_last_rem}\n        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}\n\n\n        ${text_last_doc_last_rem}    Get Text    //body\n        @{var1}    Split String    ${text_last_doc_last_rem}    Documento assinado eletronicamente por\n        ${var2}=    Set Variable    ${var1}[1]\n        @{var3}    Split String    ${var2}    \\nA autenticidade do documento pode ser conferida no site:\n        ${text_last_doc_last_rem}=    Set Variable    ${var1}[0]\n        ${info_sign_last_doc_last_rem}=    Set Variable    Documento assinado eletronicamente por${var3}[0]\n\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${text_last_doc_last_rem}\n        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].InformacaoSobreAssinaturaDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${info_sign_last_doc_last_rem}\n        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}\n\n\n\n\n        # Ir para o último documento do setor atual antes do envio pelo último setor remetente\n        Unselect Frame\n        Input Text    //*[@id=\"txtPesquisaRapida\"]    ${last_doc_last_atual}\n        RPA.Browser.Selenium.Press Keys    //*[@id=\"txtPesquisaRapida\"]    ENTER\n        Sleep    500ms\n        Unselect Frame\n        Select Frame    id=ifrVisualizacao\n\n\n\n\n        #OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/hist.txt\n        Exit For Loop    #temporário\n    END\n    Go To    https://sei.df.gov.br/sei\n\n    Close All Browsers\n\n\n#Aguardar próximo ciclo\n#    Log    Aguardando próximo ciclo...    console=True\n#    Sleep    10s\n\n#****************************************** CICLO 2 *******************************************************************\n\n################################################ FASE 1 ################################################################\n\n#Criar diretórios\n#    Log    Diretório atual: ${CURDIR}    console=True\n#    OperatingSystem.Create Directory    ${Dir_tmp}/recdistproc\n#Assegurar autenticação no SEI\n#    Go To   ${URL_SEI}/sei\n#    ${isAuthenticated}    Run Keyword And Return Status    Page Should Contain   Controle de Processos\n#    IF    ${isAuthenticated} == True\n#        Log    Usuário já autenticado.    console=True\n#    ELSE\n#        Log    Usuário não autenticado.    console=True\n#        Log    Autenticando no SEI...    console=True\n#        Run Keyword   Ir para o SEI e autenticar\n#        Sleep 5s\n#        ${isAuthenticated}    Run Keyword And Return Status    Page Should Contain   Controle de Processos\n#        IF    ${isAuthenticated} == True\n#            ${windowhandles}=    Get Window Handles\n#            Switch Window    ${windowhandles}[1]\n#            Close Window\n#            Switch Window    ${windowhandles}[0]\n#        ELSE\n#            Log    Erro na autenticação.    console=True\n#        END\n#    END\n#\n#    #Remove Files    ${Dir_tmp}/recdistproc/hist.txt\n#\n#    #Remove Directory    ${Dir_tmp}/recdistproc\n#    Close All Browsers\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/dpr.robot b/dpr.robot
+--- a/dpr.robot	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
++++ b/dpr.robot	(date 1657036624362)
+@@ -15,16 +15,18 @@
+ Library    ProcessaDocs.py
+ 
+ *** Variables ***
++#Variáveis de configuração
+ ${Browser}    chrome
+ ${URL_SEI}    https://sei.df.gov.br
+ ${login_sei}    92100027740
+-${value_Orgao}    21
++${orgao}    TERRACAP
+ ${unidade}    TERRACAP/PRESI/ASINF
+-${pag_hist}    0
+-${Dir_NaoVisualizados}    ${CURDIR}/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados
+-${Dir_Visualizados}    ${CURDIR}/F1_Receber_Distribuir_Processos/2_Processos_Visualizados
+-${Dir_Registrados}    ${CURDIR}/F1_Receber_Distribuir_Processos/3_Processos_Registrados
+-${Dir_tmp}    /tmp
++#Nomes de diretórios
++${Dir_Dados}    ${CURDIR}/data
++${Dir_NaoVisualizados}    ${Dir_Dados}/1_Processos_Nao_Visualizados
++${Dir_Visualizados}    ${Dir_Dados}/2_Processos_Visualizados
++${Dir_Registrados}    ${Dir_Dados}/3_Processos_Registrados
++${Dir_tmp}    ${Dir_Dados}/tmp
+ 
+ *** Keywords ***
+ Entrar no SEI
+@@ -34,27 +36,25 @@
+     Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s
+     Input Text    txtUsuario    ${login_sei}
+     Input Text    pwdSenha    ${senha_sei}
+-    Select From List By Value    selOrgao    ${value_Orgao}
++    Select From List By Label    selOrgao    ${orgao}
+     Click Button When Visible    sbmLogin
+ Ir para o SEI e autenticar
+     [Timeout]    10 seconds
+     ${senha_sei}    senha_sei
+     Go To   ${URL_SEI}
+     Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s
+-    Sleep   1s
+     Input Text    txtUsuario    ${login_sei}
+-    Sleep   1s
+     Input Text    pwdSenha    ${senha_sei}
+-    Sleep   1s
+-    Select From List By Value    selOrgao    ${value_Orgao}
+-    Sleep   1s
++    Select From List By Label    selOrgao    ${orgao}
+     Click Button When Visible    sbmLogin
+ Gerar não visualizados SEI
++#main-menu > li:nth-child(1) > a
++    Wait Until Page Contains Element    //*[@id="main-menu"]/li[1]/a
+     RPA.Browser.Selenium.Click Element    //*[@id="main-menu"]/li[1]/a
+     ${Source}    Get Source
+-    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/NaoVis.txt    ${Source}    overwrite=True
++    RPA.FileSystem.Create File    ${Dir_tmp}/NaoVis.txt    ${Source}    overwrite=True
+     #Gerar arquivo com informações básicas para cada processo não visualizado
+-    Run Process    python3    ${CURDIR}/NaoVis.py
++    Run Process    python3    ${CURDIR}/src/NaoVis.py
+ 
+ *** Tasks ***
+ 
+@@ -64,16 +64,17 @@
+ 
+ Criar diretórios
+     Log    Diretório atual: ${CURDIR}    console=True
+-    OperatingSystem.Create Directory    ${Dir_tmp}/recdistproc
+-    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos
+-    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados
+-    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/2_Processos_Visualizados
+-    OperatingSystem.Create Directory    ${CURDIR}/F1_Receber_Distribuir_Processos/3_Processos_Registrados
++    OperatingSystem.Create Directory    ${Dir_Dados}
++    OperatingSystem.Create Directory    ${Dir_NaoVisualizados}
++    OperatingSystem.Create Directory    ${Dir_Visualizados}
++    OperatingSystem.Create Directory    ${Dir_Registrados}
++    OperatingSystem.Create Directory    ${Dir_tmp}
++    Sleep    1s
+ Autenticar no SEI
+     [Timeout]    15 seconds
+     Log    Autenticando no SEI...    console=True
+     Run Keyword   Entrar no SEI
+-    #Sleep   5s
++    Sleep   5s
+     Wait Until Page Contains    Controle de Processos    timeout=5
+     ${pag_contem_controledeprocessos}    Does Page Contain    Controle de Processos
+     IF    ${pag_contem_controledeprocessos} == ${True}
+@@ -87,8 +88,8 @@
+     Switch Window    ${windowhandles}[0]
+ Monitorar SEI
+     Log    Verificando se há processos novos recebidos...    console=True
+-    Gerar não visualizados SEI        #Arquivos *.csv de processos não visualizados no diretório
+-    OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/NaoVis.txt
++    Gerar não visualizados SEI
++    OperatingSystem.Remove File    ${Dir_tmp}/NaoVis.txt
+     ${ListNaoVis}    OperatingSystem.List Files In Directory    ${Dir_NaoVisualizados}
+     ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${ListNaoVis}
+     IF    ${isEmpty} == True
+@@ -135,9 +136,9 @@
+         Unselect Frame
+         Select Frame    id=ifrVisualizacao
+         ${hist_andamento}    Get Text    //body
+-        RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
++        RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
+ 
+-        # Histórico de andamento armazenado no arquivo temporário ${Dir_tmp}/recdistproc/hist.txt
++        # Histórico de andamento armazenado no arquivo temporário ${Dir_tmp}/hist.txt
+ 
+         ##################################### Capturar fonte da árvore do processo ###################################
+ 
+@@ -147,9 +148,9 @@
+         Select Frame    id=ifrArvore
+         Sleep    50ms
+         ${src_arvore}    Get Source
+-        RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/src_arvore.txt    ${src_arvore}    overwrite=True
++        RPA.FileSystem.Create File    ${Dir_tmp}/src_arvore.txt    ${src_arvore}    overwrite=True
+ 
+-        # Dados brutos da árvore do processo armazanados no arquivo temporário ${Dir_tmp}/recdistproc/src_arvore.txt
++        # Dados brutos da árvore do processo armazanados no arquivo temporário ${Dir_tmp}/src_arvore.txt
+ 
+         ##################################### Processar e recuperar dados da árvore do processo ########################
+ 
+@@ -167,7 +168,7 @@
+         #Log    marcadorGroup: ${marcadorGroup}   console=True
+         ${set_infoadicionais}    set_infoadicionais
+         #Log    set_infoadicionais: ${set_infoadicionais}   console=True
+-        OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/src_arvore.txt
++        OperatingSystem.Remove File    ${Dir_tmp}/src_arvore.txt
+ 
+         ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].BoolProcessoRestrito    ${isRestrict}
+         ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].BoolInformacaoPessoal    ${isPersonalInfo}
+@@ -194,7 +195,7 @@
+             Select Frame    id=ifrVisualizacao
+             Wait Until Page Contains    Ver    timeout= 5
+             ${hist_andamento}    Get Text    //body
+-            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
++            RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
+             ${ultimo_setor_remetente}    UltimoSetorRemetenteDoProcesso
+             ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${ultimo_setor_remetente}
+             IF    ${isEmpty} == True
+@@ -202,7 +203,7 @@
+                 IF    ${existe_prox_pag_hist} == True
+                     RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
+                     ${hist_andamento}    Get Text    //body
+-                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
++                    RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
+                     ${ultimo_setor_remetente}    UltimoSetorRemetenteDoProcesso
+                 ELSE
+                     ${ultimo_setor_remetente}    Set Variable    NOT FOUND
+@@ -223,7 +224,7 @@
+             Select Frame    id=ifrVisualizacao
+             Wait Until Page Contains    Ver    timeout= 5
+             ${hist_andamento}    Get Text    //body
+-            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
++            RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
+             ${dados_last_doc_rem}    DadosUltimoDocumentoAssinadoSetorRemetente
+             ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_rem}
+             IF    ${isEmpty} == True
+@@ -231,7 +232,7 @@
+                 IF    ${existe_prox_pag_hist} == True
+                     RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
+                     ${hist_andamento}    Get Text    //body
+-                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
++                    RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
+                     ${dados_last_doc_rem}    DadosUltimoDocumentoAssinadoSetorRemetente
+                 ELSE
+                     IF    ${dados_last_doc_rem} == ""
+@@ -261,7 +262,7 @@
+             Select Frame    id=ifrVisualizacao
+             Wait Until Page Contains    Ver    timeout= 5
+             ${hist_andamento}    Get Text    //body
+-            RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
++            RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
+             ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual
+             ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_atual}
+             IF    ${isEmpty} == True
+@@ -269,7 +270,7 @@
+                 IF    ${existe_prox_pag_hist} == True
+                     RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
+                     ${hist_andamento}    Get Text    //body
+-                    RPA.FileSystem.Create File    ${Dir_tmp}/recdistproc/hist.txt    ${hist_andamento}    overwrite=True
++                    RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
+                     ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual
+                 ELSE
+                     IF    ${dados_last_doc_atual} == ""
+@@ -337,7 +338,7 @@
+ 
+ 
+ 
+-        #OperatingSystem.Remove File    ${Dir_tmp}/recdistproc/hist.txt
++        #OperatingSystem.Remove File    ${Dir_tmp}/hist.txt
+         Exit For Loop    #temporário
+     END
+     Go To    https://sei.df.gov.br/sei
+@@ -355,7 +356,7 @@
+ 
+ #Criar diretórios
+ #    Log    Diretório atual: ${CURDIR}    console=True
+-#    OperatingSystem.Create Directory    ${Dir_tmp}/recdistproc
++#    OperatingSystem.Create Directory    ${Dir_tmp}
+ #Assegurar autenticação no SEI
+ #    Go To   ${URL_SEI}/sei
+ #    ${isAuthenticated}    Run Keyword And Return Status    Page Should Contain   Controle de Processos
+@@ -377,7 +378,7 @@
+ #        END
+ #    END
+ #
+-#    #Remove Files    ${Dir_tmp}/recdistproc/hist.txt
++#    #Remove Files    ${Dir_tmp}/hist.txt
+ #
+-#    #Remove Directory    ${Dir_tmp}/recdistproc
++#    #Remove Directory    ${Dir_tmp}
+ #    Close All Browsers
+Index: src/TrataHist.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#Funções de tratamento do histórico\ndef UltimoSetorRemetenteDoProcesso():\n    Dir_tmp = '/tmp'\n    UnidadeAtual = \"TERRACAP/PRESI/ASINF\"\n    with open(Dir_tmp+'/recdistproc/hist.txt') as f:\n        lines = f.readlines()\n        for index, line in enumerate(lines):\n            if (\"Processo remetido pela unidade\") in line:\n                if UnidadeAtual in line:\n                    list_string = line.split(\"remetido pela unidade \")\n                    var1 = list_string[1]\n                    list_string = var1.split(\"\\n\")\n                    UltimoSetorRemetente = list_string[0]\n                    if (\"Processo remetido pela unidade \" + UnidadeAtual) in line:\n                        UltimoSetorRemetente = \"\"\n                    else:\n                        UltimoSetorRemetente = UltimoSetorRemetente\n                        break\n                else:\n                    UltimoSetorRemetente = \"\"\n            else:\n                UltimoSetorRemetente = \"\"\n\n    return UltimoSetorRemetente\n\ndef DadosUltimoDocumentoAssinadoSetorRemetente():\n    Dir_tmp = '/tmp'\n    UnidadeAtual = \"TERRACAP/PRESI/ASINF\"\n    with open(Dir_tmp+'/recdistproc/hist.txt') as f:\n        lines = f.readlines()\n        for index, line in enumerate(lines):\n            if (\"Processo remetido pela unidade\") in line:\n                if UnidadeAtual in line:\n                    list_string = line.split(\"remetido pela unidade \")\n                    var1 = list_string[1]\n                    list_string = var1.split(\"\\n\")\n                    UltimoSetorRemetente = list_string[0]\n                    if (\"Processo remetido pela unidade \" + UnidadeAtual) in line:\n                        UltimoSetorRemetente = \"\"\n                    else:\n                        UltimoSetorRemetente = UltimoSetorRemetente\n                        break\n                else:\n                    UltimoSetorRemetente = \"\"\n            else:\n                UltimoSetorRemetente = \"\"\n        for index, line in enumerate(lines):\n            if (UltimoSetorRemetente != \"\") and (UltimoSetorRemetente in line) and (\"Assinado Documento\" in line):\n\n                list_string = line.split(\" \")\n                DataUltimoDocumentoAssinadoSetorRemetente = list_string[0]\n\n                list_string = line.split(\"Assinado Documento \")\n                var1 = list_string[1]\n                list_string = var1.split(\" (\")\n                UltimoDocumentoAssinadoSetorRemetente = list_string[0]\n\n                list_string = line.split(\" (\")\n                var1 = list_string[1]\n                list_string = var1.split(\") \")\n                TipoUltimoDocumentoAssinadoSetorRemetente = list_string[0]\n\n                if DataUltimoDocumentoAssinadoSetorRemetente != \"\":\n                    break\n            else:\n                DataUltimoDocumentoAssinadoSetorRemetente = \"\"\n\n    DadosUltimoDocumentoAssinadoSetorRemetente = [DataUltimoDocumentoAssinadoSetorRemetente, UltimoDocumentoAssinadoSetorRemetente, TipoUltimoDocumentoAssinadoSetorRemetente]\n\n    return DadosUltimoDocumentoAssinadoSetorRemetente\n\ndef DadosUltimoDocumentoAssinadoSetorAtual():\n    Dir_tmp = '/tmp'\n    UnidadeAtual = \"TERRACAP/PRESI/ASINF\"\n    with open(Dir_tmp+'/recdistproc/hist.txt') as f:\n        lines = f.readlines()\n        for index, line in enumerate(lines):\n            if (UnidadeAtual in line) and (\"Assinado Documento\" in line):\n\n                list_string = line.split(\" \")\n                DataUltimoDocumentoAssinadoSetorAtual = list_string[0]\n\n                list_string = line.split(\"Assinado Documento \")\n                var1 = list_string[1]\n                list_string = var1.split(\" (\")\n                UltimoDocumentoAssinadoSetorAtual = list_string[0]\n\n                list_string = line.split(\" (\")\n                var1 = list_string[1]\n                list_string = var1.split(\") \")\n                TipoUltimoDocumentoAssinadoSetorAtual = list_string[0]\n\n                if DataUltimoDocumentoAssinadoSetorAtual != \"\":\n                    break\n            else:\n                DataUltimoDocumentoAssinadoSetorAtual = \"\"\n\n    DadosUltimoDocumentoAssinadoSetorAtual = [DataUltimoDocumentoAssinadoSetorAtual, UltimoDocumentoAssinadoSetorAtual, TipoUltimoDocumentoAssinadoSetorAtual]\n\n    return DadosUltimoDocumentoAssinadoSetorAtual\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/TrataHist.py b/src/TrataHist.py
+--- a/src/TrataHist.py	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
++++ b/src/TrataHist.py	(date 1657034016315)
+@@ -1,8 +1,10 @@
+ #Funções de tratamento do histórico
+ def UltimoSetorRemetenteDoProcesso():
+-    Dir_tmp = '/tmp'
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
+     UnidadeAtual = "TERRACAP/PRESI/ASINF"
+-    with open(Dir_tmp+'/recdistproc/hist.txt') as f:
++    with open(Dir_tmp+'/hist.txt') as f:
+         lines = f.readlines()
+         for index, line in enumerate(lines):
+             if ("Processo remetido pela unidade") in line:
+@@ -24,9 +26,11 @@
+     return UltimoSetorRemetente
+ 
+ def DadosUltimoDocumentoAssinadoSetorRemetente():
+-    Dir_tmp = '/tmp'
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
+     UnidadeAtual = "TERRACAP/PRESI/ASINF"
+-    with open(Dir_tmp+'/recdistproc/hist.txt') as f:
++    with open(Dir_tmp+'/hist.txt') as f:
+         lines = f.readlines()
+         for index, line in enumerate(lines):
+             if ("Processo remetido pela unidade") in line:
+@@ -70,9 +74,11 @@
+     return DadosUltimoDocumentoAssinadoSetorRemetente
+ 
+ def DadosUltimoDocumentoAssinadoSetorAtual():
+-    Dir_tmp = '/tmp'
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
+     UnidadeAtual = "TERRACAP/PRESI/ASINF"
+-    with open(Dir_tmp+'/recdistproc/hist.txt') as f:
++    with open(Dir_tmp+'/hist.txt') as f:
+         lines = f.readlines()
+         for index, line in enumerate(lines):
+             if (UnidadeAtual in line) and ("Assinado Documento" in line):
+Index: src/TrataInfoArvore.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>############################################# Recuperar dados da árvore ################################################\ndef isRestrict():\n    from bs4 import BeautifulSoup\n    Dir_tmp = '/tmp'\n    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')\n    soup = BeautifulSoup(src_arvore, 'html.parser')\n    object_list = soup.find(\"div\", {\"id\":\"topmenu\"})\n    strObject = str(object_list)\n    isRestrict='Acesso Restrito' in strObject\n    del object_list\n    del strObject\n    src_arvore.close()\n    return isRestrict\n\ndef isPersonalInfo():\n    from bs4 import BeautifulSoup\n    Dir_tmp = '/tmp'\n    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')\n    soup = BeautifulSoup(src_arvore, 'html.parser')\n    object_list = soup.find(\"div\", {\"id\":\"topmenu\"})\n    strObject = str(object_list)\n    isPersonalInfo ='Informação Pessoal' in strObject\n    del object_list\n    del strObject\n    src_arvore.close()\n    return isPersonalInfo\n\ndef isRetornoProgramado():\n    from bs4 import BeautifulSoup\n    Dir_tmp = '/tmp'\n    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')\n    soup = BeautifulSoup(src_arvore, 'html.parser')\n    object_list = soup.find(\"div\", {\"id\":\"topmenu\"})\n    strObject = str(object_list)\n    isRetornoProgramado ='Retorno Programado' in strObject\n    del object_list\n    del strObject\n    src_arvore.close()\n    return isRetornoProgramado\n\ndef dateRetornoProgramado():\n    from bs4 import BeautifulSoup\n    Dir_tmp = '/tmp'\n    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')\n    soup = BeautifulSoup(src_arvore, 'html.parser')\n    object_list = soup.find(\"div\", {\"id\":\"topmenu\"})\n    strObject = str(object_list)\n    isRetornoProgramado ='Retorno Programado' in strObject\n    if isRetornoProgramado == True:\n        var1 = strObject.split('title=\"Retorno Programado')\n        var2 = var1[1].split('\"/></a>')\n        RetornoProgramado = var2[0]\n    else:\n        RetornoProgramado ='NULL'\n    del object_list\n    del strObject\n    src_arvore.close()\n    return RetornoProgramado\n\ndef restrictMotivation():\n    from bs4 import BeautifulSoup\n    Dir_tmp = '/tmp'\n    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')\n    soup = BeautifulSoup(src_arvore, 'html.parser')\n    object_list = soup.find(\"div\", {\"id\":\"topmenu\"})\n    strObject = str(object_list)\n    isRestrict='Acesso Restrito' in strObject\n    if isRestrict == True:\n        var1 = strObject.split('title=\"Acesso Restrito')\n        var2 = var1[1].split('\"/></a>')\n        restrictMotivation = var2[0]\n    else:\n        restrictMotivation ='NULL'\n    del object_list\n    del strObject\n    src_arvore.close()\n    return restrictMotivation\n\ndef acompEspGroup():\n    from bs4 import BeautifulSoup\n    Dir_tmp = '/tmp'\n    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')\n    soup = BeautifulSoup(src_arvore, 'html.parser')\n    object_list = soup.find(\"div\", {\"id\":\"topmenu\"})\n    strObject = str(object_list)\n    inAcompEsp ='title=\"Acompanhamento Especial' in strObject\n    if inAcompEsp == True:\n        var1 = strObject.split('title=\"Acompanhamento Especial')\n        var2 = var1[1].split('\"/></a>')\n        acompEspGroup = var2[0]\n    else:\n        acompEspGroup ='NULL'\n    del object_list\n    del strObject\n    del inAcompEsp\n    src_arvore.close()\n    return acompEspGroup\n\ndef marcadorGroup():\n    from bs4 import BeautifulSoup\n    Dir_tmp = '/tmp'\n    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')\n    soup = BeautifulSoup(src_arvore, 'html.parser')\n    object_list = soup.find(\"div\", {\"id\":\"topmenu\"})\n    strObject = str(object_list)\n    inMarcador ='title=\"Marcador' in strObject\n    if inMarcador == True:\n        var1 = strObject.split('title=\"Marcador')\n        var2 = var1[1].split('\"/></a>')\n        marcadorGroup = var2[0]\n    else:\n        marcadorGroup = 'NULL'\n    del object_list\n    del strObject\n    del inMarcador\n    src_arvore.close()\n    return marcadorGroup\n\ndef set_infoadicionais():\n    from bs4 import BeautifulSoup\n    Dir_tmp = '/tmp'\n    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')\n    soup = BeautifulSoup(src_arvore, 'html.parser')\n    object_list = soup.find()\n    strObject=str(object_list)\n    isthereInfoAdicionais ='Nos[0].html = ' in strObject\n    if isthereInfoAdicionais == True:\n        var1 = strObject.split('Nos[0].html =')\n        var2 = var1[1].split(';Nos[1]')\n        info_adicionais = var2[0]\n        var1 = info_adicionais.split('</a><br /><a alt=')\n        set_infoadicionais = set()\n        for string in var1:\n            istheretitle = 'title=\"' in string\n            if istheretitle == True:\n                var3 = string.split('title=\"')\n                var3_ = var3[1]\n                var4 = var3_.split('\" class=\"ancoraSigla\">')\n                nome_extenso = var4[0]\n                var4_ = var4[1]\n                var5 = var4_.split('</a>')\n                sigla = var5[0]\n                isthereatribuido = 'atribuído para' in string\n                if isthereatribuido == True:\n                    var6 = string.split('(atribuído para <a alt=\"')\n                    var6_ = var6[1]\n                    var7 = var6_.split('\" title=\"')\n                    atribuido = var7[0]\n                else:\n                    atribuido = 'Sem atribuição'\n                set_infoadicionais.add(nome_extenso+' - '+sigla+' ('+atribuido+')')\n            else:\n                set_infoadicionais = 'NULL'\n    else:\n        set_infoadicionais = 'NULL'\n    src_arvore.close()\n    del object_list\n    del strObject\n    del info_adicionais\n    return set_infoadicionais\n\n#END\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/TrataInfoArvore.py b/src/TrataInfoArvore.py
+--- a/src/TrataInfoArvore.py	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
++++ b/src/TrataInfoArvore.py	(date 1657034179511)
+@@ -1,8 +1,10 @@
+ ############################################# Recuperar dados da árvore ################################################
+ def isRestrict():
+     from bs4 import BeautifulSoup
+-    Dir_tmp = '/tmp'
+-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
++    src_arvore = open(Dir_tmp+'/src_arvore.txt')
+     soup = BeautifulSoup(src_arvore, 'html.parser')
+     object_list = soup.find("div", {"id":"topmenu"})
+     strObject = str(object_list)
+@@ -14,8 +16,10 @@
+ 
+ def isPersonalInfo():
+     from bs4 import BeautifulSoup
+-    Dir_tmp = '/tmp'
+-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
++    src_arvore = open(Dir_tmp+'/src_arvore.txt')
+     soup = BeautifulSoup(src_arvore, 'html.parser')
+     object_list = soup.find("div", {"id":"topmenu"})
+     strObject = str(object_list)
+@@ -27,8 +31,10 @@
+ 
+ def isRetornoProgramado():
+     from bs4 import BeautifulSoup
+-    Dir_tmp = '/tmp'
+-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
++    src_arvore = open(Dir_tmp+'/src_arvore.txt')
+     soup = BeautifulSoup(src_arvore, 'html.parser')
+     object_list = soup.find("div", {"id":"topmenu"})
+     strObject = str(object_list)
+@@ -40,8 +46,10 @@
+ 
+ def dateRetornoProgramado():
+     from bs4 import BeautifulSoup
+-    Dir_tmp = '/tmp'
+-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
++    src_arvore = open(Dir_tmp+'/src_arvore.txt')
+     soup = BeautifulSoup(src_arvore, 'html.parser')
+     object_list = soup.find("div", {"id":"topmenu"})
+     strObject = str(object_list)
+@@ -59,8 +67,10 @@
+ 
+ def restrictMotivation():
+     from bs4 import BeautifulSoup
+-    Dir_tmp = '/tmp'
+-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
++    src_arvore = open(Dir_tmp+'/src_arvore.txt')
+     soup = BeautifulSoup(src_arvore, 'html.parser')
+     object_list = soup.find("div", {"id":"topmenu"})
+     strObject = str(object_list)
+@@ -78,8 +88,10 @@
+ 
+ def acompEspGroup():
+     from bs4 import BeautifulSoup
+-    Dir_tmp = '/tmp'
+-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
++    src_arvore = open(Dir_tmp+'/src_arvore.txt')
+     soup = BeautifulSoup(src_arvore, 'html.parser')
+     object_list = soup.find("div", {"id":"topmenu"})
+     strObject = str(object_list)
+@@ -98,8 +110,10 @@
+ 
+ def marcadorGroup():
+     from bs4 import BeautifulSoup
+-    Dir_tmp = '/tmp'
+-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
++    src_arvore = open(Dir_tmp+'/src_arvore.txt')
+     soup = BeautifulSoup(src_arvore, 'html.parser')
+     object_list = soup.find("div", {"id":"topmenu"})
+     strObject = str(object_list)
+@@ -118,8 +132,10 @@
+ 
+ def set_infoadicionais():
+     from bs4 import BeautifulSoup
+-    Dir_tmp = '/tmp'
+-    src_arvore = open(Dir_tmp+'/recdistproc/src_arvore.txt')
++    import os
++    dir_path = os.path.dirname(os.path.realpath(__file__))
++    Dir_tmp = dir_path + '/data/tmp'
++    src_arvore = open(Dir_tmp+'/src_arvore.txt')
+     soup = BeautifulSoup(src_arvore, 'html.parser')
+     object_list = soup.find()
+     strObject=str(object_list)
+@@ -158,5 +174,3 @@
+     del strObject
+     del info_adicionais
+     return set_infoadicionais
+-
+-#END
+Index: src/NaoVis.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from datetime import datetime as dt\nfrom bs4 import BeautifulSoup\nimport re\nimport os\nimport json\n\nDir_tmp = '/tmp'\n\ndir_path = os.path.dirname(os.path.realpath(__file__))\nprint('Lendo arquivos temporários...')\nNaoVis = open(Dir_tmp+'/recdistproc/NaoVis.txt')\n\nsoup = BeautifulSoup(NaoVis, 'html.parser')\n\nnaovis_list = soup.find_all(\"a\", class_=\"processoVisualizado\")\n\nfor s in naovis_list:\n  print('Processando dados de arquivo temporário...')\n  strdt_now=dt.now().strftime(\"%Y%m%d%H%M%S%f\")\n  s=str(s)\n\n  result=re.search('id_procedimento=(.*)&amp;infra_sistema=', s)\n  id_proc=result.group(1)\n  \n  result=re.search('onmouseover=\"return infraTooltipMostrar(.*);', s)\n  spectip_proc=result.group(1)\n  ls_spectip=spectip_proc.split(\"'\")\n  spec_proc=ls_spectip[1]\n  tip_proc=ls_spectip[3]\n\n  result=re.search('>(.*)</a>', s)\n  num_proc=result.group(1)\n\n  dtnow = str(dt.now())\n  data = {'MetaData':\n    [\n      {'IdTarefaRecebimentoDoProcesso': strdt_now},\n      {'DatetimeCriacaoTarefaRecebimento': dtnow}\n    ],\n    'ProcessData':\n    [\n      {'IdProcedimentoDoProcesso': id_proc},\n      {'NumeroDoProcessoSei': num_proc},\n      {'TipoDoProcesso': tip_proc},\n      {'EspecificacaoDoProcesso': spec_proc},\n      {'BoolProcessoRestrito': ''},\n      {'BoolInformacaoPessoal': ''},\n      {'MotivacaoProcessoRestrito': ''},\n      {'RetornoProgramado': ''},\n      {'GrupoAcompanhamentoEspecial': ''},\n      {'GrupoMarcador': ''},\n      {'UnidadesComProcessoAbertoNoMomentoDaCriacaoDaTarefa': ''},\n      {'UltimoSetorRemetenteDoProcesso': ''},\n      {'NumeroProtocoloUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},\n      {'DataDoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},\n      {'TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},\n      {'DataAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor': ''},\n      {'NumeroProtocoloUltimoDocumentoAssinadoNoSetorReceptor': ''},\n      {'TipoUltimoDocumentoAssinadoNoSetorReceptor': ''},\n      {'IDUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},\n      {'InformacaoSobreAssinaturaDoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},\n      {'TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},\n      {'InformacaoAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor': ''},\n      {'TextoDoUltimoDocumentoAssinadoNoSetorReceptor': ''}\n    ],\n    'ProcessAnalytics':\n    [\n      {'MencaoUnidadeAtualNoUltimoDocumentoAssinadoPeloUltimoRemetente': ''},\n      {'Prioridade': ''},\n      {'Atribuicao': ''}\n    ]\n  }\n  print('Serializando dados...')\n  json_object = json.dumps(data)\n  with open(dir_path+'/F1_Receber_Distribuir_Processos/1_Processos_Nao_Visualizados/'+strdt_now+'.json', 'w') as outfile:\n    outfile.write(json_object)\n  print('Arquivo de processo criado: '+strdt_now+'.json.')\nNaoVis.close()\nprint('Processamento inicial terminado.')\n\n\n\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/NaoVis.py b/src/NaoVis.py
+--- a/src/NaoVis.py	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
++++ b/src/NaoVis.py	(date 1657034602401)
+@@ -4,11 +4,14 @@
+ import os
+ import json
+ 
+-Dir_tmp = '/tmp'
+ 
+ dir_path = os.path.dirname(os.path.realpath(__file__))
++Dir_tmp = dir_path+'/data/tmp'
++print(Dir_tmp)
++Dir_NaoVisualisados = dir_path+'/data/1_Processos_Nao_Visualizados/'
++
+ print('Lendo arquivos temporários...')
+-NaoVis = open(Dir_tmp+'/recdistproc/NaoVis.txt')
++NaoVis = open(Dir_tmp+'/NaoVis.txt')
+ 
+ soup = BeautifulSoup(NaoVis, 'html.parser')
+ 
+Index: init.sh
+===================================================================
+diff --git a/init.sh b/init.sh
+deleted file mode 100644
+--- a/init.sh	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
++++ /dev/null	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
+@@ -1,4 +0,0 @@
+-cd "$PWD"
+-source "$PWD"/venv/bin/activate
+-
+-python3 "$PWD"/src/main.py
+\ No newline at end of file
+Index: src/mylog.txt
+===================================================================
+diff --git a/src/mylog.txt b/src/mylog.txt
+deleted file mode 100644
+--- a/src/mylog.txt	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
++++ /dev/null	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
+@@ -1,17 +0,0 @@
+-==============================================================================
+-Dpr :: Automação para recuperar e salvar dados de processos SEI recebidos n...
+-==============================================================================
+-Criar diretórios                                                      | PASS |
+-------------------------------------------------------------------------------
+-Autenticar no SEI                                                     | PASS |
+-------------------------------------------------------------------------------
+-Monitorar SEI                                                         | PASS |
+-------------------------------------------------------------------------------
+-Visualizar processos e extrair informações adicionais                 | PASS |
+-------------------------------------------------------------------------------
+-Dpr :: Automação para recuperar e salvar dados de processos SEI re... | PASS |
+-4 tasks, 4 passed, 0 failed
+-==============================================================================
+-Output:  /home/eli/PycharmProjects/SeiRecpData/output.xml
+-Log:     /home/eli/PycharmProjects/SeiRecpData/log.html
+-Report:  /home/eli/PycharmProjects/SeiRecpData/report.html
+Index: init-dpr.sh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/init-dpr.sh b/init-dpr.sh
+new file mode 100755
+--- /dev/null	(date 1657032000716)
++++ b/init-dpr.sh	(date 1657032000716)
+@@ -0,0 +1,5 @@
++#!/bin/bash
++cd "$PWD"
++source "$PWD"/venv/bin/activate
++python3 "$PWD"/src/main.py
++deactivate
+Index: .gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>*.html\n*.xml\n*.json
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gitignore b/.gitignore
+--- a/.gitignore	(revision 8d9bcab192ffd3a5c5b46b199cc9f7c65b4fb193)
++++ b/.gitignore	(date 1657027974518)
+@@ -1,3 +1,4 @@
+ *.html
+ *.xml
+-*.json
+\ No newline at end of file
++/home/eli/PycharmProjects/SeiRecpData/F1_Receber_Distribuir_Processos
++/home/eli/PycharmProjects/SeiRecpData/mylog.txt
