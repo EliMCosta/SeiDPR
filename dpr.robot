@@ -48,7 +48,6 @@ Ir para o SEI e autenticar
     Select From List By Label    selOrgao    ${orgao}
     Click Button When Visible    sbmLogin
 Gerar não visualizados SEI
-#main-menu > li:nth-child(1) > a
     Wait Until Page Contains Element    //*[@id="main-menu"]/li[1]/a
     RPA.Browser.Selenium.Click Element    //*[@id="main-menu"]/li[1]/a
     ${Source}    Get Source
@@ -73,7 +72,6 @@ Autenticar no SEI
     [Timeout]    15 seconds
     Log    Autenticando no SEI...    console=True
     Run Keyword   Entrar no SEI
-    #Sleep   5s
     Wait Until Page Contains    Controle de Processos    timeout=5
     ${pag_contem_controledeprocessos}    Does Page Contain    Controle de Processos
     IF    ${pag_contem_controledeprocessos} == ${True}
