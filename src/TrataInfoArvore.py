@@ -171,7 +171,7 @@ def set_infoadicionais():
                     var7 = var6_.split('" title="')
                     atribuido = var7[0]
                 else:
-                    atribuido = 'Sem atribuição'
+                    atribuido = 'sem atribuição'
                 set_infoadicionais.add(nome_extenso+' - '+sigla+' ('+atribuido+')')
             else:
                 set_infoadicionais = 'NULL'

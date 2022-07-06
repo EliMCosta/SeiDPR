@@ -70,6 +70,9 @@ def DadosUltimoDocumentoAssinadoSetorRemetente():
                     break
             else:
                 DataUltimoDocumentoAssinadoSetorRemetente = ""
+                UltimoDocumentoAssinadoSetorRemetente = ""
+                TipoUltimoDocumentoAssinadoSetorRemetente = ""
+
 
     DadosUltimoDocumentoAssinadoSetorRemetente = [DataUltimoDocumentoAssinadoSetorRemetente, UltimoDocumentoAssinadoSetorRemetente, TipoUltimoDocumentoAssinadoSetorRemetente]
 
@@ -103,6 +106,8 @@ def DadosUltimoDocumentoAssinadoSetorAtual():
                     break
             else:
                 DataUltimoDocumentoAssinadoSetorAtual = ""
+                UltimoDocumentoAssinadoSetorAtual = ""
+                TipoUltimoDocumentoAssinadoSetorAtual = ""
 
     DadosUltimoDocumentoAssinadoSetorAtual = [DataUltimoDocumentoAssinadoSetorAtual, UltimoDocumentoAssinadoSetorAtual, TipoUltimoDocumentoAssinadoSetorAtual]
 
