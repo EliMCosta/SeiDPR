@@ -3,7 +3,7 @@ import os
 import shutil
 
 logFile = open('mylog.txt', 'w')
-robot.run("dpr2.robot", stdout=logFile)
+robot.run("dpr.robot", stdout=logFile)
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 var1 = dir_path.split('/src')

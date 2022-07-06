@@ -4,16 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ce95d779-2f4b-4f75-84c6-0014e81e2960" name="Changes" comment="Terminando">
-      <change afterPath="$PROJECT_DIR$/dpr2.robot" afterDir="false" />
+    <list default="true" id="ce95d779-2f4b-4f75-84c6-0014e81e2960" name="Changes" comment="Terminada a versão 1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf.sh" beforeDir="false" afterPath="$PROJECT_DIR$/conf.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/init-dpr.sh" beforeDir="false" afterPath="$PROJECT_DIR$/init-dpr.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/NaoVis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/NaoVis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ProcessaDocs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ProcessaDocs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TrataHist.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/TrataHist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TrataInfoArvore.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/TrataInfoArvore.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dpr.robot" beforeDir="false" afterPath="$PROJECT_DIR$/dpr.robot" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dpr2.robot" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -44,13 +38,13 @@
     <setting file="file://$PROJECT_DIR$/config/config.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/config/set_credentials.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/dpr.robot" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/dpr2.robot" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/init-dpr.sh" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/NaoVis.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/PassRetrieve.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/ProcessaDocs.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/TrataHist.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/TrataInfoArvore.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -426,7 +420,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657048222183</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="Terminada a versão 1">
+      <created>1657078348813</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1657078348813</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -446,7 +447,8 @@
     <MESSAGE value="Atualizado até TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente" />
     <MESSAGE value="TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente" />
     <MESSAGE value="Terminando" />
-    <option name="LAST_COMMIT_MESSAGE" value="Terminando" />
+    <MESSAGE value="Terminada a versão 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="Terminada a versão 1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

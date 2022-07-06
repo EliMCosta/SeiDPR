@@ -12,11 +12,11 @@ Library    RPA.JSON
 Library    DateTime
 Library    TrataInfoArvore.py
 Library    TrataHist.py
-Library    ProcessaDocs.py
+#Library    ProcessaDocs.py
 
 *** Variables ***
 #Variáveis de configuração
-${Browser}    chrome
+${Browser}    headlesschrome
 ${URL_SEI}    https://sei.df.gov.br
 ${login_sei}    92100027740
 ${orgao}    TERRACAP
@@ -27,7 +27,6 @@ ${Dir_NaoVisualizados}    ${Dir_Dados}/1_Processos_Nao_Visualizados
 ${Dir_Visualizados}    ${Dir_Dados}/2_Processos_Visualizados
 ${Dir_Registrados}    ${Dir_Dados}/3_Processos_Registrados
 ${Dir_tmp}    ${Dir_Dados}/tmp
-
 *** Keywords ***
 Entrar no SEI
     [Timeout]    10 seconds
@@ -68,6 +67,7 @@ Criar diretórios
     OperatingSystem.Create Directory    ${Dir_Visualizados}
     OperatingSystem.Create Directory    ${Dir_Registrados}
     OperatingSystem.Create Directory    ${Dir_tmp}
+    OperatingSystem.Create Directory    ${CURDIR}/results
 Autenticar no SEI
     [Timeout]    15 seconds
     Log    Autenticando no SEI...    console=True
@@ -182,7 +182,6 @@ Visualizar processos e extrair informações adicionais
         Wait Until Page Contains    Ver    timeout= 5
         ${pag_contem_resumido}    Does Page Contain    resumido
         IF    ${pag_contem_resumido} == ${True}
-            #Seleciona a opção pelo histórico resumido
             Unselect Frame
             Select Frame    id=ifrVisualizacao
             RPA.Browser.Selenium.Click Element   //*[@id="ancTipoHistorico"]
@@ -204,7 +203,8 @@ Visualizar processos e extrair informações adicionais
                     RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
                     ${ultimo_setor_remetente}    UltimoSetorRemetenteDoProcesso
                 ELSE
-                    ${ultimo_setor_remetente}    Set Variable    NOT FOUND
+                    ${ultimo_setor_remetente}    Set Variable    NULL
+                    Exit For Loop
                 END
             ELSE
                 Exit For Loop
@@ -224,8 +224,8 @@ Visualizar processos e extrair informações adicionais
             ${hist_andamento}    Get Text    //body
             RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
             ${dados_last_doc_rem}    DadosUltimoDocumentoAssinadoSetorRemetente
-            ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_rem}
-            IF    ${isEmpty} == True
+            ${isEmptydados_last_doc_rem}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_rem}
+            IF    ${isEmptydados_last_doc_rem} == True
                 ${existe_prox_pag_hist}    Does Page Contain Element    //*[@id="lnkInfraProximaPaginaSuperior"]
                 IF    ${existe_prox_pag_hist} == True
                     RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
@@ -233,11 +233,8 @@ Visualizar processos e extrair informações adicionais
                     RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
                     ${dados_last_doc_rem}    DadosUltimoDocumentoAssinadoSetorRemetente
                 ELSE
-                    IF    ${dados_last_doc_rem} == ""
-                        ${dados_last_doc_rem}    Set Variable    NOT FOUND
-                    ELSE
-                        #Nothing to do
-                    END
+                    ${dados_last_doc_rem}    Set Variable    NULL
+                    Exit For Loop
                 END
             ELSE
                 Exit For Loop
@@ -247,14 +244,33 @@ Visualizar processos e extrair informações adicionais
         ${date_last_doc_last_rem}=    Set Variable    ${dados_last_doc_rem}[0]
         ${last_doc_last_rem}=    Set Variable    ${dados_last_doc_rem}[1]
         ${type_doc_last_rem}=    Set Variable    ${dados_last_doc_rem}[2]
+        ${isEmptydate_last_doc_last_rem}    Run Keyword And Return Status    Should Be Empty    ${date_last_doc_last_rem}
+        ${isEmptylast_doc_last_rem}    Run Keyword And Return Status    Should Be Empty    ${last_doc_last_rem}
+        Log    Lastdocrem empty: ${isEmptylast_doc_last_rem}
+        ${isEmptytype_doc_last_rem}    Run Keyword And Return Status    Should Be Empty    ${type_doc_last_rem}
 
 
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${date_last_doc_last_rem}
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${last_doc_last_rem}
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${type_doc_last_rem}
+        IF    ${isEmptydate_last_doc_last_rem} == True
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    NULL
+        ELSE
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${date_last_doc_last_rem}
+        END
+        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+        IF    ${isEmptylast_doc_last_rem} == True
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoUltimoSetorRemetente    NULL
+        ELSE
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${last_doc_last_rem}
+        END
+        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+        IF    ${isEmptytype_doc_last_rem} == True
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente    NULL
+        ELSE
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${type_doc_last_rem}
+        END
         Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
 
         # Dados último documento assinado no setor atual
+
         FOR    ${index}    IN RANGE    100
             Unselect Frame
             Select Frame    id=ifrVisualizacao
@@ -262,8 +278,8 @@ Visualizar processos e extrair informações adicionais
             ${hist_andamento}    Get Text    //body
             RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
             ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual
-            ${isEmpty}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_atual}
-            IF    ${isEmpty} == True
+            ${isEmptydados_last_doc_atual}    Run Keyword And Return Status    Should Be Empty    ${dados_last_doc_atual}
+            IF    ${isEmptydados_last_doc_atual} == True
                 ${existe_prox_pag_hist}    Does Page Contain Element    //*[@id="lnkInfraProximaPaginaSuperior"]
                 IF    ${existe_prox_pag_hist} == True
                     RPA.Browser.Selenium.Click Element    //*[@id="lnkInfraProximaPaginaSuperior"]
@@ -271,112 +287,119 @@ Visualizar processos e extrair informações adicionais
                     RPA.FileSystem.Create File    ${Dir_tmp}/hist.txt    ${hist_andamento}    overwrite=True
                     ${dados_last_doc_atual}    DadosUltimoDocumentoAssinadoSetorAtual
                 ELSE
-                    IF    ${dados_last_doc_atual} == ""
-                        ${dados_last_doc_atual}    Set Variable    NOT FOUND
-                    ELSE
-                        #Nothing to do
-                    END
+                    ${dados_last_doc_atual}    Set Variable    NULL
+                    Exit For Loop
                 END
             ELSE
                 Exit For Loop
             END
         END
 
-        ${date_last_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[0]
-        ${last_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[1]
-        ${type_doc_last_atual}=    Set Variable    ${dados_last_doc_atual}[2]
+        ${date_last_doc_atual}=    Set Variable    ${dados_last_doc_atual}[0]
+        ${last_doc_atual}=    Set Variable    ${dados_last_doc_atual}[1]
+        ${type_doc_atual}=    Set Variable    ${dados_last_doc_atual}[2]
+        ${isEmptydate_last_doc_atual}    Run Keyword And Return Status    Should Be Empty    ${date_last_doc_atual}
+        ${isEmptylast_doc_atual}    Run Keyword And Return Status    Should Be Empty    ${last_doc_atual}
+        ${isEmptytype_doc_atual}    Run Keyword And Return Status    Should Be Empty    ${type_doc_atual}
 
+        IF    ${isEmptydate_last_doc_atual} == True
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor    NULL
+        ELSE
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor    ${date_last_doc_atual}
+        END
+        IF    ${isEmptylast_doc_atual} == True
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoSetorReceptor    NULL
+        ELSE
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoSetorReceptor    ${last_doc_atual}
+        END
+        IF    ${isEmptytype_doc_atual} == True
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoSetorReceptor    NULL
+        ELSE
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoSetorReceptor    ${type_doc_atual}
+        END
 
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].DataAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor    ${date_last_doc_last_atual}
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].NumeroProtocoloUltimoDocumentoAssinadoNoSetorReceptor    ${last_doc_last_atual}
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TipoUltimoDocumentoAssinadoNoSetorReceptor    ${type_doc_last_atual}
         Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
 
-        # Ir para o último documento do setor remetente antes do envio do processo
-        Unselect Frame
-        Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_last_rem}
-        RPA.Browser.Selenium.Press Keys    //*[@id="txtPesquisaRapida"]    ENTER
-        Sleep    500ms
-        Unselect Frame
-        Select Frame    id=ifrVisualizacao
-        Select Frame    id=ifrArvoreHtml
+        # Ir para o último documento do setor remetente
+        IF    ${isEmptylast_doc_last_rem} == True
+            ${text_last_doc_last_rem}=    Set Variable    NULL
+            ${info_sign_last_doc_last_rem}=    Set Variable    NULL
+            Log    Não foi encontrado documento assinado de origem da unidade que enviou o processo.   console=True
+        ELSE
+            Unselect Frame
+            Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_last_rem}
+            RPA.Browser.Selenium.Press Keys    //*[@id="txtPesquisaRapida"]    ENTER
+            Sleep    500ms
+            Unselect Frame
+            Select Frame    id=ifrVisualizacao
+            Select Frame    id=ifrArvoreHtml
 
-        ${url_last_doc_last_rem}    Get Location
-        @{var1}    Split String    ${url_last_doc_last_rem}    id_protocolo=
-        ${var2}=    Set Variable    ${var1}[1]
-        @{var3}    Split String    ${var2}    &infra_sistema
-        ${id_last_doc_last_rem}=    Set Variable    ${var3}[0]
-        #Log    id_last_doc_last_rem: ${id_last_doc_last_rem}   console=True
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].IDUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${id_last_doc_last_rem}
-        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+            ${url_last_doc_last_rem}    Get Location
+            @{var1}    Split String    ${url_last_doc_last_rem}    id_protocolo=
+            ${var2}=    Set Variable    ${var1}[1]
+            @{var3}    Split String    ${var2}    &infra_sistema
+            ${id_last_doc_last_rem}=    Set Variable    ${var3}[0]
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].IDUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${id_last_doc_last_rem}
+            Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+
+            ${text_last_doc_last_rem}    Get Text    //body
+            ${contain_doc_assinado}    Run Keyword And Return Status    Should Contain    ${text_last_doc_last_rem}    Documento assinado eletronicamente por
+            IF    ${contain_doc_assinado} == True
+                @{var1}    Split String    ${text_last_doc_last_rem}    \nDocumento assinado eletronicamente por
+                ${text_last_doc_last_rem}=    Set Variable    ${var1}[0]
+                ${var2}=    Set Variable    ${var1}[1]
+                @{var3}    Split String    ${var2}    \nA autenticidade do documento pode ser conferida no site:
+                ${info_sign_last_doc_last_rem}=    Set Variable    Documento assinado eletronicamente por${var3}[0]
+            ELSE
+                ${info_sign_last_doc_last_rem}=    Set Variable    NULL
+            END
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${text_last_doc_last_rem}
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].InformacaoSobreAssinaturaDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${info_sign_last_doc_last_rem}
+            Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
 
 
-        ${text_last_doc_last_rem}    Get Text    //body
-        @{var1}    Split String    ${text_last_doc_last_rem}    Documento assinado eletronicamente por
-        ${var2}=    Set Variable    ${var1}[1]
-        @{var3}    Split String    ${var2}    \nA autenticidade do documento pode ser conferida no site:
-        ${text_last_doc_last_rem}=    Set Variable    ${var1}[0]
-        ${info_sign_last_doc_last_rem}=    Set Variable    Documento assinado eletronicamente por${var3}[0]
 
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${text_last_doc_last_rem}
-        ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].InformacaoSobreAssinaturaDoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${info_sign_last_doc_last_rem}
-        Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
-
-
-
+        END
 
         # Ir para o último documento do setor atual antes do envio pelo último setor remetente
-        Unselect Frame
-        Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_last_atual}
-        RPA.Browser.Selenium.Press Keys    //*[@id="txtPesquisaRapida"]    ENTER
-        Sleep    500ms
-        Unselect Frame
-        Select Frame    id=ifrVisualizacao
+        IF    ${isEmptylast_doc_atual} == True
+            Log    Não foi encontrado documento assinado de origem da unidade atual.   console=True
+        ELSE
+            Unselect Frame
+            Input Text    //*[@id="txtPesquisaRapida"]    ${last_doc_atual}
+            RPA.Browser.Selenium.Press Keys    //*[@id="txtPesquisaRapida"]    ENTER
+            Sleep    500ms
+            Unselect Frame
+            Select Frame    id=ifrVisualizacao
+            Select Frame    id=ifrArvoreHtml
 
+            ${url_last_doc_atual}    Get Location
+            @{var1}    Split String    ${url_last_doc_atual}    id_protocolo=
+            ${var2}=    Set Variable    ${var1}[1]
+            @{var3}    Split String    ${var2}    &infra_sistema
+            ${id_last_doc_atual}=    Set Variable    ${var3}[0]
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].IDUltimoDocumentoAssinadoNoUltimoSetorReceptor    ${id_last_doc_atual}
+            Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
 
+            ${text_last_doc_atual}    Get Text    //body
+            ${contain_doc_assinado}    Run Keyword And Return Status    Should Contain    ${text_last_doc_atual}    Documento assinado eletronicamente por
+            IF    ${contain_doc_assinado} == True
+                @{var1}    Split String    ${text_last_doc_atual}    \nDocumento assinado eletronicamente por
+                ${text_last_doc_atual}=    Set Variable    ${var1}[0]
+                ${var2}=    Set Variable    ${var1}[1]
+                @{var3}    Split String    ${var2}    \nA autenticidade do documento pode ser conferida no site:
+                ${info_sign_last_doc_atual}=    Set Variable    Documento assinado eletronicamente por${var3}[0]
+            ELSE
+                ${info_sign_last_doc_atual}=    Set Variable    NULL
+            END
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].TextoDoUltimoDocumentoAssinadoNoSetorReceptor    ${text_last_doc_atual}
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessData[*].InformacaoAssinaturaDoUltimoDocumentoAssinadoNoSetorReceptor    ${info_sign_last_doc_atual}
+            Save JSON to file    ${all_data}    ${Dir_NaoVisualizados}/${file}
+        END
 
-
-        #OperatingSystem.Remove File    ${Dir_tmp}/hist.txt
+        OperatingSystem.Remove File    ${Dir_tmp}/hist.txt
         Exit For Loop    #temporário
     END
     Go To    https://sei.df.gov.br/sei
 
     Close All Browsers
-
-
-#Aguardar próximo ciclo
-#    Log    Aguardando próximo ciclo...    console=True
-#    Sleep    10s
-
-#****************************************** CICLO 2 *******************************************************************
-
-################################################ FASE 1 ################################################################
-
-#Criar diretórios
-#    Log    Diretório atual: ${CURDIR}    console=True
-#    OperatingSystem.Create Directory    ${Dir_tmp}
-#Assegurar autenticação no SEI
-#    Go To   ${URL_SEI}/sei
-#    ${isAuthenticated}    Run Keyword And Return Status    Page Should Contain   Controle de Processos
-#    IF    ${isAuthenticated} == True
-#        Log    Usuário já autenticado.    console=True
-#    ELSE
-#        Log    Usuário não autenticado.    console=True
-#        Log    Autenticando no SEI...    console=True
-#        Run Keyword   Ir para o SEI e autenticar
-#        Sleep 5s
-#        ${isAuthenticated}    Run Keyword And Return Status    Page Should Contain   Controle de Processos
-#        IF    ${isAuthenticated} == True
-#            ${windowhandles}=    Get Window Handles
-#            Switch Window    ${windowhandles}[1]
-#            Close Window
-#            Switch Window    ${windowhandles}[0]
-#        ELSE
-#            Log    Erro na autenticação.    console=True
-#        END
-#    END
-#
-#    #Remove Files    ${Dir_tmp}/hist.txt
-#
-#    #Remove Directory    ${Dir_tmp}
-#    Close All Browsers
