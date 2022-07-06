@@ -6,9 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="ce95d779-2f4b-4f75-84c6-0014e81e2960" name="Changes" comment="Terminada a versão 1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dpr.robot" beforeDir="false" afterPath="$PROJECT_DIR$/dpr.robot" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dpr2.robot" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/init-dpr.sh" beforeDir="false" afterPath="$PROJECT_DIR$/init-dpr.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,7 +37,7 @@
     <setting file="file://$PROJECT_DIR$/conf.sh" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/config/config.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/config/set_credentials.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/dpr.robot" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/dpr.robot" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/init-dpr.sh" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/NaoVis.py" root0="FORCE_HIGHLIGHTING" />
@@ -74,8 +74,8 @@
       <recent name="$PROJECT_DIR$/Results" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
-    <configuration name="NaoVis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Shell Script.init-dpr.sh">
+    <configuration name="get_config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SeiDPR" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -83,11 +83,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/config" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/NaoVis.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/config/get_config.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -180,10 +180,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Shell Script.init-dpr.sh" />
+        <item itemvalue="Python.get_config" />
         <item itemvalue="Shell Script.conf.sh" />
         <item itemvalue="Shell Script.config.sh (1)" />
         <item itemvalue="Shell Script.config.sh" />
-        <item itemvalue="Python.NaoVis" />
       </list>
     </recent_temporary>
   </component>
@@ -427,7 +427,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657078348813</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="Terminada a versão 1">
+      <created>1657108705889</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1657108705889</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

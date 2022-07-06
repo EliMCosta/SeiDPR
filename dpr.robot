@@ -15,12 +15,6 @@ Library    TrataHist.py
 #Library    ProcessaDocs.py
 
 *** Variables ***
-#Variáveis de configuração
-${Browser}    headlesschrome
-${URL_SEI}    https://sei.df.gov.br
-${login_sei}    92100027740
-${orgao}    TERRACAP
-${unidade}    TERRACAP/PRESI/ASINF
 #Nomes de diretórios
 ${Dir_Dados}    ${CURDIR}/data
 ${Dir_NaoVisualizados}    ${Dir_Dados}/1_Processos_Nao_Visualizados
@@ -30,7 +24,21 @@ ${Dir_tmp}    ${Dir_Dados}/tmp
 *** Keywords ***
 Entrar no SEI
     [Timeout]    10 seconds
+    #Carregar as variáveis do arquivo de configuração
+    &{config_data}=    Load JSON from file    ${CURDIR}/config/config.json
+    ${Browser_as_list}=    Get values from JSON    ${config_data}    $.env[*].browser
+    ${URL_SEI_as_list}=    Get values from JSON    ${config_data}    $.sei[*].url
+    ${orgao_as_list}=    Get values from JSON    ${config_data}    $.sei[*].orgao
+    ${unidade_as_list}=    Get values from JSON    ${config_data}    $.sei[*].unidade
+    ${login_sei_as_list}=    Get values from JSON    ${config_data}    $.sei[*].usuario
+    ${Browser}=    Get From List    ${Browser_as_list}    0
+    ${URL_SEI}=    Get From List    ${URL_SEI_as_list}    0
+    ${orgao}=    Get From List    ${orgao_as_list}    0
+    ${unidade}=    Get From List    ${unidade_as_list}    0
+    ${login_sei}=    Get From List    ${login_sei_as_list}    0
+    #Carregar senha
     ${senha_sei}    senha_sei
+    #Abrir página e logar
     Open Browser   ${URL_SEI}    browser=${Browser}
     Wait Until Page Contains    GOVERNO DO DISTRITO FEDERAL    timeout=5s
     Input Text    txtUsuario    ${login_sei}
@@ -398,6 +406,7 @@ Visualizar processos e extrair informações adicionais
         END
 
         OperatingSystem.Remove File    ${Dir_tmp}/hist.txt
+        Log    Arquivo processado.   console=True
         Exit For Loop    #temporário
     END
     Go To    https://sei.df.gov.br/sei
