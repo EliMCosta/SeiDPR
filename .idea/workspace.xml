@@ -4,18 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ce95d779-2f4b-4f75-84c6-0014e81e2960" name="Changes" comment="Terminada a versão 1">
-      <change afterPath="$PROJECT_DIR$/output.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dpr.robot" beforeDir="false" afterPath="$PROJECT_DIR$/dpr.robot" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/init-dpr.sh" beforeDir="false" afterPath="$PROJECT_DIR$/init-dpr.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/NaoVis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/NaoVis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ProcessaDocs.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TrataInfoArvore.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/TrataInfoArvore.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="ce95d779-2f4b-4f75-84c6-0014e81e2960" name="Changes" comment="Release 1" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -446,7 +435,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657145177193</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="Release 1">
+      <created>1657390622260</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1657390622260</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -467,7 +463,8 @@
     <MESSAGE value="TipoUltimoDocumentoAssinadoNoUltimoSetorRemetente" />
     <MESSAGE value="Terminando" />
     <MESSAGE value="Terminada a versão 1" />
-    <option name="LAST_COMMIT_MESSAGE" value="Terminada a versão 1" />
+    <MESSAGE value="Release 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="Release 1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
