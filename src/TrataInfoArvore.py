@@ -153,7 +153,8 @@ def set_infoadicionais():
         var2 = var1[1].split(';Nos[1]')
         info_adicionais = var2[0]
         var1 = info_adicionais.split('</a><br /><a alt=')
-        set_infoadicionais = set()
+        #set_infoadicionais = set()
+        list_infoadicionais = []
         for string in var1:
             istheretitle = 'title="' in string
             if istheretitle == True:
@@ -172,13 +173,17 @@ def set_infoadicionais():
                     atribuido = var7[0]
                 else:
                     atribuido = 'sem atribuição'
-                set_infoadicionais.add(nome_extenso+' - '+sigla+' ('+atribuido+')')
+                #set_infoadicionais.add(nome_extenso + ' - ' + sigla + ' (' + atribuido + ')')
+                list_infoadicionais.append(nome_extenso + ' - ' + sigla + ' (' + atribuido + ')')
+
             else:
-                set_infoadicionais = 'NULL'
+                #set_infoadicionais = 'NULL'
+                list_infoadicionais = 'NULL'
     else:
-        set_infoadicionais = 'NULL'
+        #set_infoadicionais = 'NULL'
+        list_infoadicionais = 'NULL'
     src_arvore.close()
     del object_list
     del strObject
     del info_adicionais
-    return set_infoadicionais
+    return list_infoadicionais
