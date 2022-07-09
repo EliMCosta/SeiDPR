@@ -25,4 +25,4 @@ Pacote de software para serviço de monitoramento e recuperação de dados de no
 + Execute o arquivo _conf.sh_ (pelo terminal, ou por meio do botão direito do mouse no caso de desktop) e entre com os dados solicitados no terminal;
 
 ## Execução
-Para que o serviço inicie, basta executar o arquivo _init-dpr.sh_ dentro da [Pasta Principal].
+Para que o serviço inicie, basta executar o arquivo _init-dpr.sh_ dentro da _[Pasta Principal]_.

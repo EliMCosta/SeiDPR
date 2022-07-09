@@ -3575,5 +3575,6 @@ Visualizar processos e extrair informações adicionais 10
         Exit For Loop    #temporário
     END
 
+    OperatingSystem.Remove Directory    ${Dir_tmp}
     Go To    https://sei.df.gov.br/sei
     Close All Browsers

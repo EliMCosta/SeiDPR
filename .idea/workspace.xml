@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ce95d779-2f4b-4f75-84c6-0014e81e2960" name="Changes" comment="Release 1" />
+    <list default="true" id="ce95d779-2f4b-4f75-84c6-0014e81e2960" name="Changes" comment="Release 1">
+      <change beforePath="$PROJECT_DIR$/.idea/SeiDPR.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SeiDPR.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dpr.robot" beforeDir="false" afterPath="$PROJECT_DIR$/dpr.robot" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output.xml" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -57,7 +63,7 @@
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/eli/PycharmProjects/SeiRecpData&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/eli/PycharmProjects/SeiDPR - v1.0.0&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
