@@ -4,3 +4,7 @@ numpy==1.23.0
 pandas==1.4.2
 robotframework==5.0.1
 rpaframework==15.1.4
+numpy>=1.16.2
+torch>=1.0.1.post2
+azure-ai-textanalytics
+azure-ai-textanalytics==5.2.0b4

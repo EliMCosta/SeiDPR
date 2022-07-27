@@ -15,8 +15,8 @@ NaoVis = open(Dir_tmp+'/NaoVis.txt')
 
 soup = BeautifulSoup(NaoVis, 'html.parser')
 
-#naovis_list = soup.find_all("a", class_="processoVisualizado")
 naovis_list = soup.find_all("a", class_="processoNaoVisualizado")
+#naovis_list = soup.find_all("a", class_="processoNaoVisualizado")
 
 for s in naovis_list:
   print('Processando dados de arquivo temporário...')
@@ -70,6 +70,7 @@ for s in naovis_list:
     ],
     'ProcessAnalytics':
     [
+      {'SinteseTextoUltimoDocumentoAssinadoNoUltimoSetorRemetente': ''},
       {'MencaoUnidadeAtualNoUltimoDocumentoAssinadoPeloUltimoRemetente': ''},
       {'Prioridade': ''},
       {'Atribuicao': ''}

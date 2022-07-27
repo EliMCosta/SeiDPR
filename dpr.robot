@@ -3,7 +3,7 @@ Documentation    Automação para recuperar e salvar dados de processos SEI rece
 Library    RPA.Browser.Selenium
 Library    RPA.Desktop
 Library    Process
-Library    PassRetrieve.py
+Library    Secrets.py
 Library    RPA.FileSystem
 Library    OperatingSystem
 Library    String
@@ -13,15 +13,17 @@ Library    DateTime
 Library    TrataInfoArvore.py
 Library    TrataHist.py
 Library    BuiltIn
+Library    Analytics.py
 
 *** Variables ***
 #Nomes de diretórios
 ${Dir_Dados}    ${CURDIR}/data
 ${Dir_NaoVisualizados}    ${Dir_Dados}/1_Processos_Nao_Visualizados
 ${Dir_Visualizados}    ${Dir_Dados}/2_Processos_Visualizados
-${Dir_Registrados}    ${Dir_Dados}/3_Processos_Registrados
+${Dir_Analisados}    ${Dir_Dados}/3_Processos_Analisados
+${Dir_Registrados}    ${Dir_Dados}/4_Processos_Registrados
 ${Dir_tmp}    ${Dir_Dados}/tmp
-${Sleep_Cycle}    30
+${Sleep_Cycle}    5
 *** Keywords ***
 Entrar no SEI
     [Timeout]    10 seconds
@@ -78,7 +80,7 @@ Criar diretórios
     OperatingSystem.Create Directory    ${Dir_Registrados}
     OperatingSystem.Create Directory    ${Dir_tmp}
     OperatingSystem.Create Directory    ${CURDIR}/results
-
+    Sleep    50ms
 #****************************************** CICLO 1 *******************************************************************
 
 ################################################ FASE 1 ################################################################
@@ -87,8 +89,8 @@ Autenticar no SEI
     [Timeout]    10 seconds
     Log    Autenticando no SEI...    console=True
     Run Keyword   Entrar no SEI
-    #Wait Until Page Contains    Controle de Processos    timeout=5
-    Sleep    3 s
+    Wait Until Page Contains    Controle de Processos    timeout=5
+    #Sleep    7 s
     ${pag_contem_controledeprocessos}    Does Page Contain    Controle de Processos
     IF    ${pag_contem_controledeprocessos} == ${True}
         Log    Login realizado com sucesso.    console=True
@@ -100,7 +102,7 @@ Autenticar no SEI
     Close Window
     Switch Window    ${windowhandles}[0]
 Monitorar SEI
-    [Timeout]    10 seconds
+    [Timeout]    300 seconds
     Log    Verificando se há processos novos recebidos...    console=True
     Gerar não visualizados SEI
     OperatingSystem.Remove File    ${Dir_tmp}/NaoVis.txt
@@ -113,6 +115,7 @@ Monitorar SEI
         Log    ${ListNaoVis}    console=True
     END
     Log    ...fim da verificação.    console=True
+    Sleep    120s
 
 ############################################### FASE 2 #################################################################
 
@@ -415,6 +418,32 @@ Visualizar processos e extrair informações adicionais
         Log    Arquivo processado.   console=True
         Exit For Loop    #temporário
     END
+
+Analisar Processos
+    [Timeout]    120 seconds
+    #Ler lista de processos visualizados e com dados extraídos
+    ${ListVis}    OperatingSystem.List Files In Directory    ${Dir_Visualizados}
+    Log    Visualizados: ${ListVis}...   console=True
+    #Analisar cada processo
+    FOR    ${file}    IN    @{ListVis}
+        Run Keyword And Continue On Failure    OperatingSystem.Remove File    ${Dir_tmp}/analysing.txt
+        &{all_data}=    Load JSON from file    ${Dir_Visualizados}/${file}
+        ${text_last_doc_last_rem}=    Get values from JSON    ${all_data}    $.ProcessData[*].TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente     #NOT  NULL
+        Log    Analisando ${file}...   console=True
+        Create File    ${Dir_tmp}/analysing.txt    ${text_last_doc_last_rem}[0]
+        Wait Until Created    ${Dir_tmp}/analysing.txt    5
+        ${resumo}    AzureSummarization
+        Log    ${resumo}   console=True
+
+
+    END
+
+
+
+
+
+
+
 
 #*************************************** AGUARDAR PRÓXIMO CICLO ********************************************************
 Aguardar Ciclo 2
@@ -2907,7 +2936,7 @@ Autenticar no SEI 9
         Close Window
         Switch Window    ${windowhandles}[0]
     END
-Monitorar SEI 2
+Monitorar SEI 9
     [Timeout]    10 seconds
     Log    Verificando se há processos novos recebidos...    console=True
     Gerar não visualizados SEI
