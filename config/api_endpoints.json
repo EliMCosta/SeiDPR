@@ -1,0 +1,1 @@
+{"endpoints": [{"summarization_service": "https://freeinstance001.cognitiveservices.azure.com/"}, {"task_creation":  "http://bpm.eastus.cloudapp.azure.com:8080/kie-server/services/rest/server/containers/Gestao_Demandas_SEI_1.0.0-SNAPSHOT/processes/Gestao_Demandas_SEI.Gestao_Demandas_SEI/instances"}]}

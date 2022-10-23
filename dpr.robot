@@ -77,6 +77,7 @@ Criar diretórios
     OperatingSystem.Create Directory    ${Dir_Dados}
     OperatingSystem.Create Directory    ${Dir_NaoVisualizados}
     OperatingSystem.Create Directory    ${Dir_Visualizados}
+    OperatingSystem.Create Directory    ${Dir_Analisados}
     OperatingSystem.Create Directory    ${Dir_Registrados}
     OperatingSystem.Create Directory    ${Dir_tmp}
     OperatingSystem.Create Directory    ${CURDIR}/results
@@ -115,12 +116,12 @@ Monitorar SEI
         Log    ${ListNaoVis}    console=True
     END
     Log    ...fim da verificação.    console=True
-    Sleep    120s
+    Sleep    1s
 
 ############################################### FASE 2 #################################################################
 
 Visualizar processos e extrair informações adicionais
-    [Timeout]    10 seconds
+    [Timeout]    60 seconds
     #Ler lista de processos não visualizados
     ${ListNaoVis}    OperatingSystem.List Files In Directory    ${Dir_NaoVisualizados}
     #Extrair informações de cada processo
@@ -416,11 +417,14 @@ Visualizar processos e extrair informações adicionais
         OperatingSystem.Remove File    ${Dir_tmp}/hist.txt
         OperatingSystem.Move File    ${Dir_NaoVisualizados}/${file}    ${Dir_Visualizados}/${file}
         Log    Arquivo processado.   console=True
-        Exit For Loop    #temporário
+        #Exit For Loop    #temporário
     END
 
+
+
+
 Analisar Processos
-    [Timeout]    120 seconds
+    [Timeout]    60 seconds
     #Ler lista de processos visualizados e com dados extraídos
     ${ListVis}    OperatingSystem.List Files In Directory    ${Dir_Visualizados}
     Log    Visualizados: ${ListVis}...   console=True
@@ -430,16 +434,54 @@ Analisar Processos
         &{all_data}=    Load JSON from file    ${Dir_Visualizados}/${file}
         ${text_last_doc_last_rem}=    Get values from JSON    ${all_data}    $.ProcessData[*].TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente     #NOT  NULL
         Log    Analisando ${file}...   console=True
-        Create File    ${Dir_tmp}/analysing.txt    ${text_last_doc_last_rem}[0]
-        Wait Until Created    ${Dir_tmp}/analysing.txt    5
-        ${resumo}    AzureSummarization
-        Log    ${resumo}   console=True
 
+        ${isEmpty_text_last_doc_last_rem}    Run Keyword And Return Status    Should Be Empty    ${text_last_doc_last_rem}
+        IF    ${isEmpty_text_last_doc_last_rem} == True
+            Log    Sem texto do último remetente.    console=True
+        ELSE
+            Create File    ${Dir_tmp}/analysing.txt    ${text_last_doc_last_rem}[0]
+            Wait Until Created    ${Dir_tmp}/analysing.txt    5
+            ${resumo_text_last_doc_last_rem}    CuttedText
+            Log    ${resumo_text_last_doc_last_rem}   console=True
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessAnalytics[*].SinteseTextoUltimoDocumentoAssinadoNoUltimoSetorRemetente    ${resumo_text_last_doc_last_rem}
+            Save JSON to file    ${all_data}    ${Dir_Visualizados}/${file}
+        END
 
+        Run Keyword And Continue On Failure    OperatingSystem.Remove File    ${Dir_tmp}/analysing.txt
+        &{all_data}=    Load JSON from file    ${Dir_Visualizados}/${file}
+        ${text_last_doc_atual}=    Get values from JSON    ${all_data}    $.ProcessData[*].TextoDoUltimoDocumentoAssinadoNoSetorReceptor     #NOT  NULL
+        Log    Analisando ${file}...   console=True
+
+        ${isEmpty_text_last_doc_atual}    Run Keyword And Return Status    Should Be Empty    ${text_last_doc_atual}
+        IF    ${isEmpty_text_last_doc_atual} == True
+            Log    Sem texto da unidade atual.    console=True
+        ELSE
+            Create File    ${Dir_tmp}/analysing.txt    ${text_last_doc_atual}[0]
+            Wait Until Created    ${Dir_tmp}/analysing.txt    5
+            ${resumo_text_last_doc_atual}    CuttedText
+            Log    ${resumo_text_last_doc_atual}   console=True
+            ${all_data}=    Update value to JSON    ${all_data}    $.ProcessAnalytics[*].SinteseTextoUltimoDocumentoAssinadoNoSetorAtual    ${resumo_text_last_doc_atual}
+            Save JSON to file    ${all_data}    ${Dir_Visualizados}/${file}
+        END
+        OperatingSystem.Move File    ${Dir_Visualizados}/${file}    ${Dir_Analisados}/${file}
     END
 
-
-
+#Registrar Tarefas
+#    [Timeout]    60 seconds
+#    #Ler lista de processos visualizados e com dados extraídos
+#    ${ListVis}    OperatingSystem.List Files In Directory    ${Dir_Visualizados}
+#    #Log    Visualizados: ${ListVis}...   console=True
+#    #Registrar cada processo
+#    FOR    ${file}    IN    @{ListVis}
+#        Run Keyword And Continue On Failure    OperatingSystem.Remove File    ${Dir_tmp}/analysing.txt
+#       &{all_data}=    Load JSON from file    ${Dir_Visualizados}/${file}
+#        ${text_last_doc_last_rem}=    Get values from JSON    ${all_data}    $.ProcessData[*].TextoUltimoDocumentoAssinadoNoUltimoSetorRemetente     #NOT  NULL
+#        Log    Analisando ${file}...   console=True
+#        Create File    ${Dir_tmp}/analysing.txt    ${text_last_doc_last_rem}[0]
+#        Wait Until Created    ${Dir_tmp}/analysing.txt    5
+#        ${resumo}    AzureSummarization
+#        Log    ${resumo}   console=True
+#    END
 
 
 
@@ -456,6 +498,21 @@ Aguardar Ciclo 2
 
 Autenticar no SEI 2
 #Tenta novo login se a conexão anterior for perdida
+    #Carregar as variáveis do arquivo de configuração
+    &{config_data}=    Load JSON from file    ${CURDIR}/config/config.json
+    ${Browser_as_list}=    Get values from JSON    ${config_data}    $.env[*].browser
+    ${URL_SEI_as_list}=    Get values from JSON    ${config_data}    $.sei[*].url
+    ${orgao_as_list}=    Get values from JSON    ${config_data}    $.sei[*].orgao
+    ${unidade_as_list}=    Get values from JSON    ${config_data}    $.sei[*].unidade
+    ${login_sei_as_list}=    Get values from JSON    ${config_data}    $.sei[*].usuario
+    ${Browser}=    Get From List    ${Browser_as_list}    0
+    ${URL_SEI}=    Get From List    ${URL_SEI_as_list}    0
+    ${orgao}=    Get From List    ${orgao_as_list}    0
+    ${unidade}=    Get From List    ${unidade_as_list}    0
+    ${login_sei}=    Get From List    ${login_sei_as_list}    0
+    #Carregar senha
+    ${senha_sei}    senha_sei
+
     [Timeout]    10 seconds
     Log    Verificando status de login...    console=True
     Go To    ${URL_SEI}/sei
